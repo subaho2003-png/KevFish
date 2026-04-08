@@ -394,18 +394,18 @@ body {
 
     <div class="score-table">
       <div class="score-table-hdr">Wave Height</div>
-      <div class="score-row"><span class="range">0&ndash;2 ft</span><span class="badge green">5 pts</span></div>
-      <div class="score-row"><span class="range">2&ndash;3 ft</span><span class="badge yellow">4 pts</span></div>
+      <div class="score-row"><span class="range">0&ndash;2 ft</span><span class="badge green">6 pts</span></div>
+      <div class="score-row"><span class="range">2&ndash;3 ft</span><span class="badge yellow">5 pts</span></div>
       <div class="score-row"><span class="range">3&ndash;5 ft</span><span class="badge orange">3 pts</span></div>
       <div class="score-row"><span class="range">5+ ft</span><span class="badge red">1 pt</span></div>
     </div>
 
     <div class="score-table">
       <div class="score-table-hdr">Total Score &rarr; Condition</div>
-      <div class="score-row"><span class="range">13&ndash;15 pts</span><span class="badge green">Very Good &ndash; Excellent</span></div>
-      <div class="score-row"><span class="range">9&ndash;12 pts</span><span class="badge yellow">Good &ndash; Very Good</span></div>
-      <div class="score-row"><span class="range">6&ndash;8 pts</span><span class="badge orange">Fair &ndash; Good</span></div>
-      <div class="score-row"><span class="range">3&ndash;5 pts</span><span class="badge red">Poor &ndash; Fair</span></div>
+      <div class="score-row"><span class="range">14&ndash;16 pts</span><span class="badge green">Very Good &ndash; Excellent</span></div>
+      <div class="score-row"><span class="range">10&ndash;13 pts</span><span class="badge yellow">Good &ndash; Very Good</span></div>
+      <div class="score-row"><span class="range">7&ndash;9 pts</span><span class="badge orange">Fair &ndash; Good</span></div>
+      <div class="score-row"><span class="range">3&ndash;6 pts</span><span class="badge red">Poor &ndash; Fair</span></div>
     </div>
 
     <div class="section-hdr">Data Sources</div>
@@ -510,17 +510,17 @@ function scoreRain(p)  { return p < 10 ? 5 : p < 25 ? 4 : p < 50 ? 3 : 1; }
 function scoreWind(v)  { return v <  5 ? 5 : v < 10 ? 4 : v < 20 ? 3 : 1; }
 function scoreWave(ft) {
   if (ft == null) return null;
-  return ft < 2 ? 5 : ft < 3 ? 4 : ft < 5 ? 3 : 1;
+  return ft < 2 ? 6 : ft < 3 ? 5 : ft < 5 ? 3 : 1;
 }
 
 function computeScore(rain, wind, wave) {
   const wp = scoreWave(wave);
   if (wp == null) return { pts: scoreRain(rain) + scoreWind(wind), max: 10, waveNA: true };
-  return { pts: scoreRain(rain) + scoreWind(wind) + wp, max: 15, waveNA: false };
+  return { pts: scoreRain(rain) + scoreWind(wind) + wp, max: 16, waveNA: false };
 }
 
 function colorOf(pts, max) {
-  if (max === 15) return pts >= 13 ? 'green' : pts >= 9 ? 'yellow' : pts >= 6 ? 'orange' : 'red';
+  if (max === 16) return pts >= 14 ? 'green' : pts >= 10 ? 'yellow' : pts >= 7 ? 'orange' : 'red';
   // 2-factor max 10
   return pts >= 9 ? 'green' : pts >= 7 ? 'yellow' : pts >= 4 ? 'orange' : 'red';
 }
