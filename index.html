@@ -501,7 +501,7 @@ const LON            = -80.3256;
 const TZ             = 'America/New_York';
 const FORECAST_DAYS  = 16;
 const CALENDAR_DAYS  = 21;
-const WINDY_KEY      = 'YOUR_WINDY_KEY'; // get free key at api.windy.com
+const WINDY_KEY      = 'WFodLkRZJDFfVcqtF8VNVDo4H944y89g';
 
 // ============================================================
 // SCORING
@@ -528,6 +528,45 @@ function labelOf(c)   { return {green:'Very Good',yellow:'Good',orange:'Fair',re
 function cRain(v)     { return v < 10 ? 'green' : v < 25 ? 'yellow' : v < 50 ? 'orange' : 'red'; }
 function cWind(v)     { return v <  5 ? 'green' : v < 10 ? 'yellow' : v < 20 ? 'orange' : 'red'; }
 function cWave(ft)    { if (ft == null) return 'grey'; return ft < 2 ? 'green' : ft < 3 ? 'yellow' : ft < 5 ? 'orange' : 'red'; }
+
+// ============================================================
+// WAVE ESTIMATION MODEL
+// ============================================================
+// Pierson-Moskowitz formula adjusted for Fort Pierce fetch geometry.
+// Fort Pierce faces east — easterly winds have full Atlantic fetch;
+// westerly winds are offshore with very short fetch.
+function estimateWaveHeight(windMph, windDirDeg) {
+  const windMs = Math.max(windMph, 1) * 0.44704;
+  const hsFull = 0.0248 * windMs * windMs; // meters, fully developed sea
+  const d = ((windDirDeg % 360) + 360) % 360;
+  let fetch;
+  if      (d >= 45  && d < 135) fetch = 1.00; // E/onshore: full Atlantic fetch
+  else if (d >= 135 && d < 225) fetch = 0.85; // S/SE: moderate fetch
+  else if (d >= 225 && d < 315) fetch = 0.35; // W/offshore: short fetch
+  else                           fetch = 0.75; // N/NE: moderate fetch
+  return +(hsFull * fetch * 3.28084).toFixed(2); // feet
+}
+
+// Compare formula output against last 7 days of actual wave heights
+// to produce a calibration factor specific to current Fort Pierce conditions.
+function computeCalibration(calibData) {
+  if (!calibData) return 1.0;
+  const { waveHist, windHist } = calibData;
+  if (!waveHist?.daily?.wave_height_max || !windHist?.daily) return 1.0;
+  const ratios = [];
+  waveHist.daily.time.forEach((date, i) => {
+    const actualM  = waveHist.daily.wave_height_max[i];
+    const windMph  = windHist.daily.wind_speed_10m_max[i];
+    const windDir  = windHist.daily.wind_direction_10m_dominant[i];
+    if (actualM == null || windMph == null || windDir == null || windMph < 3) return;
+    const actualFt = actualM * 3.28084;
+    const estFt    = estimateWaveHeight(windMph, windDir);
+    if (estFt > 0.1) ratios.push(actualFt / estFt);
+  });
+  if (ratios.length < 2) return 1.0;
+  const avg = ratios.reduce((a, b) => a + b, 0) / ratios.length;
+  return Math.min(Math.max(avg, 0.3), 3.0); // clamp to prevent wild outliers
+}
 
 // ============================================================
 // DATE HELPERS
@@ -568,7 +607,7 @@ async function apiForecast() {
   return getJSON(
     `https://api.open-meteo.com/v1/forecast` +
     `?latitude=${LAT}&longitude=${LON}` +
-    `&daily=precipitation_probability_max,wind_speed_10m_max` +
+    `&daily=precipitation_probability_max,wind_speed_10m_max,wind_direction_10m_dominant` +
     `&wind_speed_unit=mph&timezone=${encodeURIComponent(TZ)}` +
     `&forecast_days=${FORECAST_DAYS}`
   );
@@ -631,6 +670,29 @@ async function apiHistorical() {
   );
 }
 
+async function apiCalibration() {
+  // Fetch last 7 days of actual wave heights + wind data to calibrate the estimate model
+  try {
+    const end   = shiftDate(todayStr(), -1);
+    const start = shiftDate(end, -6);
+    const [waveHist, windHist] = await Promise.all([
+      getJSON(
+        `https://marine-api.open-meteo.com/v1/marine` +
+        `?latitude=${LAT}&longitude=${LON}&daily=wave_height_max` +
+        `&timezone=${encodeURIComponent(TZ)}&start_date=${start}&end_date=${end}`
+      ),
+      getJSON(
+        `https://archive-api.open-meteo.com/v1/archive` +
+        `?latitude=${LAT}&longitude=${LON}` +
+        `&daily=wind_speed_10m_max,wind_direction_10m_dominant` +
+        `&wind_speed_unit=mph&timezone=${encodeURIComponent(TZ)}` +
+        `&start_date=${start}&end_date=${end}`
+      )
+    ]);
+    return { waveHist, windHist };
+  } catch { return null; }
+}
+
 // ============================================================
 // FIRESTORE — save today's forecast, load past predictions
 // ============================================================
@@ -671,7 +733,9 @@ async function loadPredictions(dates) {
 // ============================================================
 async function loadForecast() {
   try {
-    const [fcast, marine, alerts, windyWaves] = await Promise.all([apiForecast(), apiMarine(), apiAlerts(), apiWindyWaves(WINDY_KEY)]);
+    const [fcast, marine, alerts, windyWaves, calibData] = await Promise.all([
+      apiForecast(), apiMarine(), apiAlerts(), apiWindyWaves(WINDY_KEY), apiCalibration()
+    ]);
 
     // NWS alert banner
     if (alerts?.features?.length) {
@@ -690,26 +754,49 @@ async function loadForecast() {
       waveMap[d] = m != null ? +(m * 3.28084).toFixed(2) : null;
     });
 
-    const dates   = fcast.daily.time;
-    const rainArr = fcast.daily.precipitation_probability_max;
-    const windArr = fcast.daily.wind_speed_10m_max;
+    const dates    = fcast.daily.time;
+    const rainArr  = fcast.daily.precipitation_probability_max;
+    const windArr  = fcast.daily.wind_speed_10m_max;
+    const windDirArr = fcast.daily.wind_direction_10m_dominant;
+
+    // Calibration factor derived from last 7 days of actual wave data
+    const calibFactor = computeCalibration(calibData);
 
     saveForecast(dates, rainArr, windArr, waveMap); // fire-and-forget
 
     const cal   = document.getElementById('calendar');
     const today = todayStr();
-    let waveNAShown = false;
+    let hasEstimated = false;
+    let hasWaveNA    = false;
     cal.innerHTML = '';
 
     // 16 days with API data
     dates.forEach((date, i) => {
-      const rain = rainArr[i] ?? 0;
-      const wind = windArr[i] ?? 0;
-      const wave = waveMap[date] ?? windyWaves?.[date] ?? null;
+      const rain    = rainArr[i]    ?? 0;
+      const wind    = windArr[i]    ?? 0;
+      const windDir = windDirArr[i] ?? 90; // default east if missing
+
+      let wave, isEstimated;
+      if (waveMap[date] != null) {
+        wave = waveMap[date];
+        isEstimated = false;
+      } else if (windyWaves?.[date] != null) {
+        wave = windyWaves[date];
+        isEstimated = false;
+      } else {
+        wave = +(estimateWaveHeight(wind, windDir) * calibFactor).toFixed(1);
+        isEstimated = true;
+        hasEstimated = true;
+      }
+
       const { pts, max, waveNA } = computeScore(rain, wind, wave);
       const color = colorOf(pts, max);
       const { dow, mday } = fmtDate(date);
-      if (waveNA) waveNAShown = true;
+      if (waveNA) hasWaveNA = true;
+
+      const waveLbl = wave != null
+        ? (isEstimated ? '~' : '') + wave.toFixed(1) + ' ft'
+        : 'N/A';
 
       const card = document.createElement('div');
       card.className = `day-card ${color}${date === today ? ' today' : ''}`;
@@ -720,12 +807,12 @@ async function loadForecast() {
         </div>
         <div class="day-middle">
           <div class="score-num">${pts}<span class="of">/${max}</span></div>
-          <div class="score-label">${labelOf(color)}${waveNA ? ' *' : ''}</div>
+          <div class="score-label">${labelOf(color)}${isEstimated ? ' ~' : waveNA ? ' *' : ''}</div>
         </div>
         <div class="day-badges">
           <span class="badge ${cRain(rain)}">🌧 ${Math.round(rain)}%</span>
           <span class="badge ${cWind(wind)}">💨 ${Math.round(wind)} mph</span>
-          <span class="badge ${cWave(wave)}">🌊 ${wave != null ? wave.toFixed(1) + ' ft' : 'N/A'}</span>
+          <span class="badge ${cWave(wave)}"">🌊 ${waveLbl}</span>
         </div>`;
       cal.appendChild(card);
     });
@@ -752,10 +839,16 @@ async function loadForecast() {
       cal.appendChild(card);
     }
 
-    if (waveNAShown) {
+    if (hasEstimated) {
       const note = document.createElement('p');
       note.className = 'footnote';
-      note.textContent = '* Wave data unavailable — score based on rain & wind only (out of 10)';
+      note.textContent = `~ Wave height estimated from wind speed, direction & ${calibData ? '7-day local calibration' : 'Pierson-Moskowitz model'}`;
+      cal.appendChild(note);
+    }
+    if (hasWaveNA) {
+      const note = document.createElement('p');
+      note.className = 'footnote';
+      note.textContent = '* Score based on rain & wind only (wave data unavailable, out of 10)';
       cal.appendChild(note);
     }
 
