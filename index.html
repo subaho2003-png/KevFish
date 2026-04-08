@@ -331,6 +331,152 @@ body {
 .actuals-row .a-label  { color: var(--muted); }
 .actuals-row .a-actual { color: var(--text); font-weight: 600; }
 .actuals-row .a-pred   { color: var(--dim); }
+
+/* ---- Settings Screen ---- */
+.settings-section {
+  background: var(--card);
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+.settings-section-hdr {
+  background: #0d1f35;
+  padding: 8px 12px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text);
+  border-bottom: 1px solid var(--border);
+}
+.threshold-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 9px 12px;
+  border-top: 1px solid var(--border);
+  gap: 8px;
+}
+.threshold-row:first-of-type { border-top: none; }
+.threshold-label {
+  font-size: 0.75rem;
+  color: var(--muted);
+  flex: 1;
+}
+.threshold-label .from { font-weight: 700; }
+.threshold-ctrl {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.arrow-btn {
+  width: 30px; height: 30px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--accent);
+  font-size: 0.85rem;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+.arrow-btn:active { background: var(--border); }
+.threshold-val {
+  min-width: 56px;
+  text-align: center;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text);
+}
+.threshold-val.changed { color: var(--yellow); }
+.settings-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
+  margin-bottom: 16px;
+}
+.btn-apply {
+  flex: 2;
+  padding: 12px;
+  background: var(--accent);
+  color: #09162a;
+  border: none;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.btn-apply:active { opacity: 0.8; }
+.btn-reset {
+  flex: 1;
+  padding: 12px;
+  background: var(--card);
+  color: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.btn-reset:active { opacity: 0.8; }
+.settings-note {
+  font-size: 0.72rem;
+  color: var(--dim);
+  text-align: center;
+  margin-bottom: 14px;
+  font-style: italic;
+}
+
+/* ---- Confirmation Modal ---- */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 20px;
+}
+.modal-box {
+  background: #152a44;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 20px;
+  width: 100%;
+  max-width: 360px;
+}
+.modal-box h3 {
+  font-size: 1rem;
+  color: var(--text);
+  margin-bottom: 12px;
+}
+.modal-changes {
+  background: var(--bg);
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin-bottom: 16px;
+  font-size: 0.78rem;
+  color: var(--muted);
+  line-height: 1.8;
+}
+.modal-changes .change-line { color: var(--yellow); }
+.modal-btns {
+  display: flex;
+  gap: 8px;
+}
+.modal-btns button {
+  flex: 1;
+  padding: 11px;
+  border-radius: 8px;
+  border: none;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+.modal-confirm { background: var(--accent); color: #09162a; }
+.modal-cancel  { background: var(--card); color: var(--muted); border: 1px solid var(--border) !important; }
 </style>
 </head>
 <body>
@@ -346,6 +492,7 @@ body {
   <button class="tab-btn active" data-screen="forecast">Forecast</button>
   <button class="tab-btn" data-screen="sources">Sources</button>
   <button class="tab-btn" data-screen="actuals">Actuals</button>
+  <button class="tab-btn" data-screen="settings">Settings</button>
 </nav>
 
 <div id="main">
@@ -462,7 +609,113 @@ body {
     </div>
   </div>
 
+  <!-- ===== SCREEN 4: SETTINGS ===== -->
+  <div id="screen-settings" class="screen">
+    <p class="settings-note">Default values shown. Yellow = pending change. Press Apply to confirm.</p>
+
+    <div class="settings-section">
+      <div class="settings-section-hdr">Rain (Precipitation Chance)</div>
+      <div class="threshold-row" data-factor="rain" data-idx="0" tabindex="0">
+        <span class="threshold-label"><span class="from" style="color:var(--green)">Green</span> → <span style="color:var(--yellow)">Yellow</span> below</span>
+        <div class="threshold-ctrl">
+          <button class="arrow-btn" data-dir="-1">▼</button>
+          <span class="threshold-val" id="tv-rain-0"></span>
+          <button class="arrow-btn" data-dir="1">▲</button>
+        </div>
+      </div>
+      <div class="threshold-row" data-factor="rain" data-idx="1" tabindex="0">
+        <span class="threshold-label"><span class="from" style="color:var(--yellow)">Yellow</span> → <span style="color:var(--orange)">Orange</span> below</span>
+        <div class="threshold-ctrl">
+          <button class="arrow-btn" data-dir="-1">▼</button>
+          <span class="threshold-val" id="tv-rain-1"></span>
+          <button class="arrow-btn" data-dir="1">▲</button>
+        </div>
+      </div>
+      <div class="threshold-row" data-factor="rain" data-idx="2" tabindex="0">
+        <span class="threshold-label"><span class="from" style="color:var(--orange)">Orange</span> → <span style="color:var(--red)">Red</span> below</span>
+        <div class="threshold-ctrl">
+          <button class="arrow-btn" data-dir="-1">▼</button>
+          <span class="threshold-val" id="tv-rain-2"></span>
+          <button class="arrow-btn" data-dir="1">▲</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <div class="settings-section-hdr">Wind Speed</div>
+      <div class="threshold-row" data-factor="wind" data-idx="0" tabindex="0">
+        <span class="threshold-label"><span class="from" style="color:var(--green)">Green</span> → <span style="color:var(--yellow)">Yellow</span> below</span>
+        <div class="threshold-ctrl">
+          <button class="arrow-btn" data-dir="-1">▼</button>
+          <span class="threshold-val" id="tv-wind-0"></span>
+          <button class="arrow-btn" data-dir="1">▲</button>
+        </div>
+      </div>
+      <div class="threshold-row" data-factor="wind" data-idx="1" tabindex="0">
+        <span class="threshold-label"><span class="from" style="color:var(--yellow)">Yellow</span> → <span style="color:var(--orange)">Orange</span> below</span>
+        <div class="threshold-ctrl">
+          <button class="arrow-btn" data-dir="-1">▼</button>
+          <span class="threshold-val" id="tv-wind-1"></span>
+          <button class="arrow-btn" data-dir="1">▲</button>
+        </div>
+      </div>
+      <div class="threshold-row" data-factor="wind" data-idx="2" tabindex="0">
+        <span class="threshold-label"><span class="from" style="color:var(--orange)">Orange</span> → <span style="color:var(--red)">Red</span> below</span>
+        <div class="threshold-ctrl">
+          <button class="arrow-btn" data-dir="-1">▼</button>
+          <span class="threshold-val" id="tv-wind-2"></span>
+          <button class="arrow-btn" data-dir="1">▲</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <div class="settings-section-hdr">Wave Height</div>
+      <div class="threshold-row" data-factor="wave" data-idx="0" tabindex="0">
+        <span class="threshold-label"><span class="from" style="color:var(--green)">Green</span> → <span style="color:var(--yellow)">Yellow</span> below</span>
+        <div class="threshold-ctrl">
+          <button class="arrow-btn" data-dir="-1">▼</button>
+          <span class="threshold-val" id="tv-wave-0"></span>
+          <button class="arrow-btn" data-dir="1">▲</button>
+        </div>
+      </div>
+      <div class="threshold-row" data-factor="wave" data-idx="1" tabindex="0">
+        <span class="threshold-label"><span class="from" style="color:var(--yellow)">Yellow</span> → <span style="color:var(--orange)">Orange</span> below</span>
+        <div class="threshold-ctrl">
+          <button class="arrow-btn" data-dir="-1">▼</button>
+          <span class="threshold-val" id="tv-wave-1"></span>
+          <button class="arrow-btn" data-dir="1">▲</button>
+        </div>
+      </div>
+      <div class="threshold-row" data-factor="wave" data-idx="2" tabindex="0">
+        <span class="threshold-label"><span class="from" style="color:var(--orange)">Orange</span> → <span style="color:var(--red)">Red</span> below</span>
+        <div class="threshold-ctrl">
+          <button class="arrow-btn" data-dir="-1">▼</button>
+          <span class="threshold-val" id="tv-wave-2"></span>
+          <button class="arrow-btn" data-dir="1">▲</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="settings-actions">
+      <button class="btn-apply" id="btn-apply">Apply Changes</button>
+      <button class="btn-reset" id="btn-reset">Reset Defaults</button>
+    </div>
+  </div>
+
 </div><!-- /#main -->
+
+<!-- Confirmation Modal -->
+<div id="confirm-modal" class="modal-overlay" style="display:none">
+  <div class="modal-box">
+    <h3>Apply these changes?</h3>
+    <div class="modal-changes" id="modal-changes"></div>
+    <div class="modal-btns">
+      <button class="modal-confirm" id="modal-yes">Apply</button>
+      <button class="modal-cancel" id="modal-no">Cancel</button>
+    </div>
+  </div>
+</div>
 
 <!-- Firebase SDKs -->
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
@@ -504,13 +757,45 @@ const CALENDAR_DAYS  = 21;
 const WINDY_KEY      = 'WFodLkRZJDFfVcqtF8VNVDo4H944y89g';
 
 // ============================================================
+// THRESHOLDS (user-configurable, persisted in localStorage)
+// ============================================================
+const DEFAULT_THRESHOLDS = {
+  rain: [10, 25, 50],   // % breakpoints
+  wind: [5, 10, 20],    // mph breakpoints
+  wave: [2, 3, 5]       // ft breakpoints
+};
+
+function loadThresholds() {
+  try {
+    const s = localStorage.getItem('kevfish_thresholds');
+    return s ? JSON.parse(s) : JSON.parse(JSON.stringify(DEFAULT_THRESHOLDS));
+  } catch { return JSON.parse(JSON.stringify(DEFAULT_THRESHOLDS)); }
+}
+
+let thresholds = loadThresholds();
+let pendingThresholds = JSON.parse(JSON.stringify(thresholds));
+
+// ============================================================
 // SCORING
 // ============================================================
-function scoreRain(p)  { return p < 10 ? 5 : p < 25 ? 4 : p < 50 ? 3 : 1; }
-function scoreWind(v)  { return v <  5 ? 5 : v < 10 ? 4 : v < 20 ? 3 : 1; }
+function scoreRain(p) {
+  if (p < thresholds.rain[0]) return 5;
+  if (p < thresholds.rain[1]) return 4;
+  if (p < thresholds.rain[2]) return 3;
+  return 1;
+}
+function scoreWind(v) {
+  if (v < thresholds.wind[0]) return 5;
+  if (v < thresholds.wind[1]) return 4;
+  if (v < thresholds.wind[2]) return 3;
+  return 1;
+}
 function scoreWave(ft) {
   if (ft == null) return null;
-  return ft < 2 ? 6 : ft < 3 ? 5 : ft < 5 ? 3 : 1;
+  if (ft < thresholds.wave[0]) return 6;
+  if (ft < thresholds.wave[1]) return 5;
+  if (ft < thresholds.wave[2]) return 3;
+  return 1;
 }
 
 function computeScore(rain, wind, wave) {
@@ -521,13 +806,17 @@ function computeScore(rain, wind, wave) {
 
 function colorOf(pts, max) {
   if (max === 16) return pts >= 14 ? 'green' : pts >= 10 ? 'yellow' : pts >= 7 ? 'orange' : 'red';
-  // 2-factor max 10
   return pts >= 9 ? 'green' : pts >= 7 ? 'yellow' : pts >= 4 ? 'orange' : 'red';
 }
 function labelOf(c)   { return {green:'Very Good',yellow:'Good',orange:'Fair',red:'Poor'}[c]; }
-function cRain(v)     { return v < 10 ? 'green' : v < 25 ? 'yellow' : v < 50 ? 'orange' : 'red'; }
-function cWind(v)     { return v <  5 ? 'green' : v < 10 ? 'yellow' : v < 20 ? 'orange' : 'red'; }
-function cWave(ft)    { if (ft == null) return 'grey'; return ft < 2 ? 'green' : ft < 3 ? 'yellow' : ft < 5 ? 'orange' : 'red'; }
+function cRain(v)  { const t=thresholds.rain; return v<t[0]?'green':v<t[1]?'yellow':v<t[2]?'orange':'red'; }
+function cWind(v)  { const t=thresholds.wind; return v<t[0]?'green':v<t[1]?'yellow':v<t[2]?'orange':'red'; }
+function cWave(ft) { if(ft==null)return'grey'; const t=thresholds.wave; return ft<t[0]?'green':ft<t[1]?'yellow':ft<t[2]?'orange':'red'; }
+
+function degToCompass(deg) {
+  const dirs = ['N','NE','E','SE','S','SW','W','NW'];
+  return dirs[Math.round(((deg % 360) + 360) % 360 / 45) % 8];
+}
 
 // ============================================================
 // WAVE ESTIMATION MODEL
@@ -731,6 +1020,96 @@ async function loadPredictions(dates) {
 // ============================================================
 // RENDER: SCREEN 1 — FORECAST
 // ============================================================
+let cachedForecast = null; // stored after first fetch so settings changes can re-render
+
+function renderCalendar(data) {
+  const { dates, rainArr, windArr, windDirArr, waveMap, windyWaves, calibFactor } = data;
+  const cal   = document.getElementById('calendar');
+  const today = todayStr();
+  let hasEstimated = false;
+  let hasWaveNA    = false;
+  cal.innerHTML = '';
+
+  dates.forEach((date, i) => {
+    const rain    = rainArr[i]    ?? 0;
+    const wind    = windArr[i]    ?? 0;
+    const windDir = windDirArr[i] ?? 90;
+    const compass = degToCompass(windDir);
+
+    let wave, isEstimated;
+    if (waveMap[date] != null) {
+      wave = waveMap[date]; isEstimated = false;
+    } else if (windyWaves?.[date] != null) {
+      wave = windyWaves[date]; isEstimated = false;
+    } else {
+      wave = +(estimateWaveHeight(wind, windDir) * calibFactor).toFixed(1);
+      isEstimated = true; hasEstimated = true;
+    }
+
+    const { pts, max, waveNA } = computeScore(rain, wind, wave);
+    const color = colorOf(pts, max);
+    const { dow, mday } = fmtDate(date);
+    if (waveNA) hasWaveNA = true;
+
+    const waveLbl = wave != null
+      ? (isEstimated ? '~' : '') + wave.toFixed(1) + ' ft'
+      : 'N/A';
+
+    const card = document.createElement('div');
+    card.className = `day-card ${color}${date === today ? ' today' : ''}`;
+    card.innerHTML = `
+      <div class="day-date">
+        <div class="dow">${date === today ? 'TODAY' : dow}</div>
+        <div class="mday">${mday}</div>
+      </div>
+      <div class="day-middle">
+        <div class="score-num">${pts}<span class="of">/${max}</span></div>
+        <div class="score-label">${labelOf(color)}${isEstimated ? ' ~' : waveNA ? ' *' : ''}</div>
+      </div>
+      <div class="day-badges">
+        <span class="badge ${cRain(rain)}">🌧 ${Math.round(rain)}%</span>
+        <span class="badge ${cWind(wind)}">💨 ${Math.round(wind)} mph ${compass}</span>
+        <span class="badge ${cWave(wave)}">🌊 ${waveLbl}</span>
+      </div>`;
+    cal.appendChild(card);
+  });
+
+  // Extended placeholder days (17-21)
+  const lastDate = dates[dates.length - 1];
+  for (let n = 1; n <= CALENDAR_DAYS - dates.length; n++) {
+    const ds = shiftDate(lastDate, n);
+    const { dow, mday } = fmtDate(ds);
+    const card = document.createElement('div');
+    card.className = 'day-card grey';
+    card.innerHTML = `
+      <div class="day-date">
+        <div class="dow">${dow}</div>
+        <div class="mday">${mday}</div>
+      </div>
+      <div class="day-middle">
+        <div class="score-num">&mdash;</div>
+        <div class="score-label">Beyond range</div>
+      </div>
+      <div class="day-badges">
+        <span class="badge grey">No data</span>
+      </div>`;
+    cal.appendChild(card);
+  }
+
+  if (hasEstimated) {
+    const note = document.createElement('p');
+    note.className = 'footnote';
+    note.textContent = `~ Wave height estimated from wind speed, direction & ${data.calibData ? '7-day local calibration' : 'Pierson-Moskowitz model'}`;
+    cal.appendChild(note);
+  }
+  if (hasWaveNA) {
+    const note = document.createElement('p');
+    note.className = 'footnote';
+    note.textContent = '* Score based on rain & wind only (wave data unavailable, out of 10)';
+    cal.appendChild(note);
+  }
+}
+
 async function loadForecast() {
   try {
     const [fcast, marine, alerts, windyWaves, calibData] = await Promise.all([
@@ -764,93 +1143,9 @@ async function loadForecast() {
 
     saveForecast(dates, rainArr, windArr, waveMap); // fire-and-forget
 
-    const cal   = document.getElementById('calendar');
-    const today = todayStr();
-    let hasEstimated = false;
-    let hasWaveNA    = false;
-    cal.innerHTML = '';
-
-    // 16 days with API data
-    dates.forEach((date, i) => {
-      const rain    = rainArr[i]    ?? 0;
-      const wind    = windArr[i]    ?? 0;
-      const windDir = windDirArr[i] ?? 90; // default east if missing
-
-      let wave, isEstimated;
-      if (waveMap[date] != null) {
-        wave = waveMap[date];
-        isEstimated = false;
-      } else if (windyWaves?.[date] != null) {
-        wave = windyWaves[date];
-        isEstimated = false;
-      } else {
-        wave = +(estimateWaveHeight(wind, windDir) * calibFactor).toFixed(1);
-        isEstimated = true;
-        hasEstimated = true;
-      }
-
-      const { pts, max, waveNA } = computeScore(rain, wind, wave);
-      const color = colorOf(pts, max);
-      const { dow, mday } = fmtDate(date);
-      if (waveNA) hasWaveNA = true;
-
-      const waveLbl = wave != null
-        ? (isEstimated ? '~' : '') + wave.toFixed(1) + ' ft'
-        : 'N/A';
-
-      const card = document.createElement('div');
-      card.className = `day-card ${color}${date === today ? ' today' : ''}`;
-      card.innerHTML = `
-        <div class="day-date">
-          <div class="dow">${date === today ? 'TODAY' : dow}</div>
-          <div class="mday">${mday}</div>
-        </div>
-        <div class="day-middle">
-          <div class="score-num">${pts}<span class="of">/${max}</span></div>
-          <div class="score-label">${labelOf(color)}${isEstimated ? ' ~' : waveNA ? ' *' : ''}</div>
-        </div>
-        <div class="day-badges">
-          <span class="badge ${cRain(rain)}">🌧 ${Math.round(rain)}%</span>
-          <span class="badge ${cWind(wind)}">💨 ${Math.round(wind)} mph</span>
-          <span class="badge ${cWave(wave)}"">🌊 ${waveLbl}</span>
-        </div>`;
-      cal.appendChild(card);
-    });
-
-    // Extended placeholder days (17-21)
-    const lastDate = dates[dates.length - 1];
-    for (let n = 1; n <= CALENDAR_DAYS - dates.length; n++) {
-      const ds = shiftDate(lastDate, n);
-      const { dow, mday } = fmtDate(ds);
-      const card = document.createElement('div');
-      card.className = 'day-card grey';
-      card.innerHTML = `
-        <div class="day-date">
-          <div class="dow">${dow}</div>
-          <div class="mday">${mday}</div>
-        </div>
-        <div class="day-middle">
-          <div class="score-num">&mdash;</div>
-          <div class="score-label">Beyond range</div>
-        </div>
-        <div class="day-badges">
-          <span class="badge grey">No data</span>
-        </div>`;
-      cal.appendChild(card);
-    }
-
-    if (hasEstimated) {
-      const note = document.createElement('p');
-      note.className = 'footnote';
-      note.textContent = `~ Wave height estimated from wind speed, direction & ${calibData ? '7-day local calibration' : 'Pierson-Moskowitz model'}`;
-      cal.appendChild(note);
-    }
-    if (hasWaveNA) {
-      const note = document.createElement('p');
-      note.className = 'footnote';
-      note.textContent = '* Score based on rain & wind only (wave data unavailable, out of 10)';
-      cal.appendChild(note);
-    }
+    // Cache data so settings changes can re-render without re-fetching
+    cachedForecast = { dates, rainArr, windArr, windDirArr, waveMap, windyWaves, calibFactor, calibData };
+    renderCalendar(cachedForecast);
 
     const now = new Date().toLocaleTimeString('en-US', { timeZone: TZ, hour: 'numeric', minute: '2-digit' });
     document.getElementById('forecast-ts').textContent = `Updated ${now}`;
@@ -931,6 +1226,89 @@ async function loadActuals() {
 }
 
 // ============================================================
+// SETTINGS SCREEN
+// ============================================================
+const UNITS = { rain: '%', wind: ' mph', wave: ' ft' };
+const STEPS = { rain: 1,   wind: 1,      wave: 0.5  };
+const MINS  = { rain: 1,   wind: 1,      wave: 0.5  };
+const MAXS  = { rain: 99,  wind: 60,     wave: 20   };
+
+function renderSettings() {
+  ['rain','wind','wave'].forEach(factor => {
+    pendingThresholds[factor].forEach((val, idx) => {
+      const el = document.getElementById(`tv-${factor}-${idx}`);
+      if (!el) return;
+      el.textContent = val + UNITS[factor];
+      el.classList.toggle('changed', val !== thresholds[factor][idx]);
+    });
+  });
+}
+
+function adjustThreshold(factor, idx, dir) {
+  const arr  = pendingThresholds[factor];
+  const step = STEPS[factor];
+  let newVal = Math.round((arr[idx] + dir * step) * 10) / 10;
+  // Clamp to min/max and maintain ordering with gap of 1 step
+  const lo = idx === 0 ? MINS[factor] : arr[idx - 1] + step;
+  const hi = idx === arr.length - 1 ? MAXS[factor] : arr[idx + 1] - step;
+  newVal = Math.min(Math.max(newVal, lo), hi);
+  pendingThresholds[factor][idx] = newVal;
+  renderSettings();
+}
+
+function buildChangesSummary() {
+  const lines = [];
+  const labels = { rain: 'Rain', wind: 'Wind', wave: 'Wave' };
+  const tiers  = ['Green→Yellow', 'Yellow→Orange', 'Orange→Red'];
+  ['rain','wind','wave'].forEach(factor => {
+    pendingThresholds[factor].forEach((val, idx) => {
+      if (val !== thresholds[factor][idx]) {
+        lines.push(`<span class="change-line">${labels[factor]} ${tiers[idx]}: ${thresholds[factor][idx]}${UNITS[factor]} → ${val}${UNITS[factor]}</span>`);
+      }
+    });
+  });
+  return lines;
+}
+
+document.getElementById('btn-apply').addEventListener('click', () => {
+  const changes = buildChangesSummary();
+  if (!changes.length) return;
+  document.getElementById('modal-changes').innerHTML = changes.join('<br>');
+  document.getElementById('confirm-modal').style.display = 'flex';
+});
+
+document.getElementById('modal-yes').addEventListener('click', () => {
+  thresholds = JSON.parse(JSON.stringify(pendingThresholds));
+  localStorage.setItem('kevfish_thresholds', JSON.stringify(thresholds));
+  document.getElementById('confirm-modal').style.display = 'none';
+  renderSettings();
+  if (cachedForecast) renderCalendar(cachedForecast); // re-render forecast with new thresholds
+});
+
+document.getElementById('modal-no').addEventListener('click', () => {
+  document.getElementById('confirm-modal').style.display = 'none';
+});
+
+document.getElementById('btn-reset').addEventListener('click', () => {
+  pendingThresholds = JSON.parse(JSON.stringify(DEFAULT_THRESHOLDS));
+  renderSettings();
+});
+
+// Arrow button clicks
+document.querySelectorAll('.threshold-row').forEach(row => {
+  const factor = row.dataset.factor;
+  const idx    = parseInt(row.dataset.idx);
+  row.querySelectorAll('.arrow-btn').forEach(btn => {
+    btn.addEventListener('click', () => adjustThreshold(factor, idx, parseInt(btn.dataset.dir)));
+  });
+  // Keyboard arrow key support when row is focused
+  row.addEventListener('keydown', e => {
+    if (e.key === 'ArrowUp')   { e.preventDefault(); adjustThreshold(factor, idx,  1); }
+    if (e.key === 'ArrowDown') { e.preventDefault(); adjustThreshold(factor, idx, -1); }
+  });
+});
+
+// ============================================================
 // TAB NAVIGATION
 // ============================================================
 document.querySelectorAll('.tab-btn').forEach(btn => {
@@ -939,7 +1317,8 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     btn.classList.add('active');
     document.getElementById('screen-' + btn.dataset.screen).classList.add('active');
-    if (btn.dataset.screen === 'actuals') loadActuals();
+    if (btn.dataset.screen === 'actuals')  loadActuals();
+    if (btn.dataset.screen === 'settings') renderSettings();
   });
 });
 
