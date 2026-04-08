@@ -5,29 +5,855 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>KevFish</title>
 <style>
-  body { font-family: sans-serif; background: #1a2e4a; color: #fff; min-height: 100vh; display: flex; align-items: center; justify-content: center; }
-  h1 { font-size: 3rem; text-align: center; color: #4fc3f7; }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:         #0f1f32;
+  --card:       #152a44;
+  --border:     #1e3a5a;
+  --accent:     #4fc3f7;
+  --text:       #e8f4fd;
+  --muted:      #7eb3d4;
+  --dim:        #3a6a90;
+  --green:      #4caf50;
+  --yellow:     #fdd835;
+  --orange:     #ff9800;
+  --red:        #f44336;
+  --green-bg:   #0d2e0d;
+  --yellow-bg:  #2e2500;
+  --orange-bg:  #2e1400;
+  --red-bg:     #2e0606;
+}
+
+html, body { height: 100%; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  display: flex;
+  flex-direction: column;
+  max-width: 430px;
+  margin: 0 auto;
+  height: 100%;
+}
+
+/* ---- Header ---- */
+#header {
+  background: #09162a;
+  padding: 14px 16px 10px;
+  text-align: center;
+  flex-shrink: 0;
+  border-bottom: 1px solid var(--border);
+}
+#header h1 {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--accent);
+  letter-spacing: 4px;
+}
+#header .subtitle {
+  font-size: 0.68rem;
+  color: var(--muted);
+  margin-top: 2px;
+  letter-spacing: 1px;
+}
+
+/* ---- Alert Banner ---- */
+#alert-banner {
+  background: #7f0000;
+  color: #ffcdd2;
+  padding: 8px 14px;
+  font-size: 0.78rem;
+  line-height: 1.45;
+  display: none;
+  flex-shrink: 0;
+  border-bottom: 1px solid #b71c1c;
+}
+
+/* ---- Tab Nav ---- */
+#tabs {
+  display: flex;
+  background: #09162a;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.tab-btn {
+  flex: 1;
+  padding: 10px 4px 8px;
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+.tab-btn.active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+/* ---- Main Scroll Area ---- */
+#main {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ---- Screens ---- */
+.screen { display: none; padding: 12px; }
+.screen.active { display: block; }
+
+/* ---- Loading State ---- */
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 48px 20px;
+  color: var(--muted);
+  font-size: 0.85rem;
+  gap: 14px;
+}
+.spinner {
+  width: 34px;
+  height: 34px;
+  border: 3px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.75s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ---- Updated timestamp ---- */
+.updated-ts {
+  text-align: right;
+  font-size: 0.67rem;
+  color: var(--dim);
+  margin-bottom: 10px;
+}
+
+/* ---- Legend ---- */
+.legend {
+  display: flex;
+  justify-content: space-around;
+  background: var(--card);
+  border-radius: 8px;
+  padding: 8px 6px;
+  margin-bottom: 12px;
+}
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.69rem;
+  color: var(--muted);
+}
+.legend-dot {
+  width: 9px; height: 9px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.legend-item.green  .legend-dot { background: var(--green); }
+.legend-item.yellow .legend-dot { background: var(--yellow); }
+.legend-item.orange .legend-dot { background: var(--orange); }
+.legend-item.red    .legend-dot { background: var(--red); }
+
+/* ---- Day Cards ---- */
+.day-card {
+  border-radius: 10px;
+  padding: 10px 12px;
+  margin-bottom: 7px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-left: 4px solid transparent;
+}
+.day-card.green  { background: var(--green-bg);  border-left-color: var(--green); }
+.day-card.yellow { background: var(--yellow-bg); border-left-color: var(--yellow); }
+.day-card.orange { background: var(--orange-bg); border-left-color: var(--orange); }
+.day-card.red    { background: var(--red-bg);    border-left-color: var(--red); }
+.day-card.grey   { background: var(--card);      border-left-color: var(--border); opacity: 0.5; }
+.day-card.today  { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.day-date { min-width: 68px; }
+.day-date .dow {
+  font-size: 0.66rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.day-date .mday {
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.day-middle { flex: 1; }
+.day-middle .score-num {
+  font-size: 1.25rem;
+  font-weight: 800;
+  line-height: 1;
+}
+.day-middle .score-num .of {
+  font-size: 0.62em;
+  font-weight: 400;
+  color: var(--muted);
+}
+.day-middle .score-label {
+  font-size: 0.69rem;
+  color: var(--muted);
+  margin-top: 1px;
+}
+
+.day-badges {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  align-items: flex-end;
+}
+
+.badge {
+  font-size: 0.67rem;
+  padding: 2px 7px;
+  border-radius: 20px;
+  font-weight: 700;
+  white-space: nowrap;
+  border: 1px solid transparent;
+}
+.badge.green  { background: #1b4a1b; color: #a5d6a7; border-color: #2e7d32; }
+.badge.yellow { background: #3d3100; color: #fff59d; border-color: #f9a825; }
+.badge.orange { background: #3d1800; color: #ffcc80; border-color: #e65100; }
+.badge.red    { background: #3d0000; color: #ef9a9a; border-color: #c62828; }
+.badge.grey   { background: var(--card); color: var(--muted); border-color: var(--border); }
+
+.footnote {
+  font-size: 0.7rem;
+  color: var(--dim);
+  text-align: center;
+  margin-top: 8px;
+  padding: 6px;
+  font-style: italic;
+}
+
+/* ---- Section Header ---- */
+.section-hdr {
+  font-size: 0.7rem;
+  color: var(--dim);
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  margin: 16px 0 8px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--border);
+}
+.section-hdr:first-child { margin-top: 0; }
+
+/* ---- Score Tables (Sources screen) ---- */
+.score-table {
+  background: var(--card);
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+.score-table-hdr {
+  background: #0d1f35;
+  padding: 8px 12px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text);
+}
+.score-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 12px;
+  border-top: 1px solid var(--border);
+  font-size: 0.75rem;
+}
+.score-row .range { color: var(--muted); }
+
+/* ---- Source Cards ---- */
+.source-card {
+  background: var(--card);
+  border-radius: 10px;
+  padding: 12px;
+  margin-bottom: 8px;
+  border-left: 3px solid var(--accent);
+}
+.source-card h3 {
+  font-size: 0.84rem;
+  color: var(--accent);
+  margin-bottom: 5px;
+}
+.source-card p {
+  font-size: 0.75rem;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+/* ---- Actuals Screen ---- */
+.info-note {
+  font-size: 0.75rem;
+  color: var(--muted);
+  text-align: center;
+  padding: 10px 12px;
+  margin-bottom: 10px;
+  font-style: italic;
+  background: var(--card);
+  border-radius: 8px;
+  line-height: 1.5;
+}
+
+.actuals-card {
+  background: var(--card);
+  border-radius: 10px;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+}
+.actuals-date {
+  font-size: 0.7rem;
+  color: var(--accent);
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  margin-bottom: 7px;
+}
+.actuals-row {
+  display: grid;
+  grid-template-columns: 56px 1fr 1fr;
+  padding: 4px 0;
+  font-size: 0.75rem;
+  border-top: 1px solid var(--border);
+}
+.actuals-row:first-of-type { border-top: none; }
+.actuals-row .a-label  { color: var(--muted); }
+.actuals-row .a-actual { color: var(--text); font-weight: 600; }
+.actuals-row .a-pred   { color: var(--dim); }
 </style>
 </head>
 <body>
-<h1>KevFish</h1>
+
+<div id="header">
+  <h1>KEVFISH</h1>
+  <div class="subtitle">Fort Pierce Offshore &middot; 0&ndash;25 mi</div>
+</div>
+
+<div id="alert-banner"></div>
+
+<nav id="tabs">
+  <button class="tab-btn active" data-screen="forecast">Forecast</button>
+  <button class="tab-btn" data-screen="sources">Sources</button>
+  <button class="tab-btn" data-screen="actuals">Actuals</button>
+</nav>
+
+<div id="main">
+
+  <!-- ===== SCREEN 1: FORECAST ===== -->
+  <div id="screen-forecast" class="screen active">
+    <div id="forecast-loading" class="loading-state">
+      <div class="spinner"></div>
+      <span>Loading forecast&hellip;</span>
+    </div>
+    <div id="forecast-content" style="display:none">
+      <div class="updated-ts" id="forecast-ts"></div>
+      <div class="legend">
+        <div class="legend-item green"><div class="legend-dot"></div>Very Good</div>
+        <div class="legend-item yellow"><div class="legend-dot"></div>Good</div>
+        <div class="legend-item orange"><div class="legend-dot"></div>Fair</div>
+        <div class="legend-item red"><div class="legend-dot"></div>Poor</div>
+      </div>
+      <div id="calendar"></div>
+    </div>
+    <div id="forecast-err" class="loading-state" style="display:none">
+      <span>Failed to load forecast. Check your connection and reload.</span>
+    </div>
+  </div>
+
+  <!-- ===== SCREEN 2: SOURCES ===== -->
+  <div id="screen-sources" class="screen">
+
+    <div class="section-hdr">Scoring System</div>
+
+    <div class="score-table">
+      <div class="score-table-hdr">Rain (Precipitation Chance)</div>
+      <div class="score-row"><span class="range">0&ndash;10%</span><span class="badge green">5 pts</span></div>
+      <div class="score-row"><span class="range">10&ndash;25%</span><span class="badge yellow">4 pts</span></div>
+      <div class="score-row"><span class="range">25&ndash;50%</span><span class="badge orange">3 pts</span></div>
+      <div class="score-row"><span class="range">50&ndash;100%</span><span class="badge red">1 pt</span></div>
+    </div>
+
+    <div class="score-table">
+      <div class="score-table-hdr">Wind Speed</div>
+      <div class="score-row"><span class="range">0&ndash;5 mph</span><span class="badge green">5 pts</span></div>
+      <div class="score-row"><span class="range">5&ndash;10 mph</span><span class="badge yellow">4 pts</span></div>
+      <div class="score-row"><span class="range">10&ndash;20 mph</span><span class="badge orange">3 pts</span></div>
+      <div class="score-row"><span class="range">20+ mph</span><span class="badge red">1 pt</span></div>
+    </div>
+
+    <div class="score-table">
+      <div class="score-table-hdr">Wave Height</div>
+      <div class="score-row"><span class="range">0&ndash;2 ft</span><span class="badge green">5 pts</span></div>
+      <div class="score-row"><span class="range">2&ndash;3 ft</span><span class="badge yellow">4 pts</span></div>
+      <div class="score-row"><span class="range">3&ndash;5 ft</span><span class="badge orange">3 pts</span></div>
+      <div class="score-row"><span class="range">5+ ft</span><span class="badge red">1 pt</span></div>
+    </div>
+
+    <div class="score-table">
+      <div class="score-table-hdr">Total Score &rarr; Condition</div>
+      <div class="score-row"><span class="range">13&ndash;15 pts</span><span class="badge green">Very Good &ndash; Excellent</span></div>
+      <div class="score-row"><span class="range">9&ndash;12 pts</span><span class="badge yellow">Good &ndash; Very Good</span></div>
+      <div class="score-row"><span class="range">6&ndash;8 pts</span><span class="badge orange">Fair &ndash; Good</span></div>
+      <div class="score-row"><span class="range">3&ndash;5 pts</span><span class="badge red">Poor &ndash; Fair</span></div>
+    </div>
+
+    <div class="section-hdr">Data Sources</div>
+
+    <div class="source-card">
+      <h3>Open-Meteo Forecast API</h3>
+      <p>Precipitation probability (%) and max wind speed (mph) for up to 16 days. Free, no API key required. Used for rain &amp; wind scores.</p>
+    </div>
+    <div class="source-card">
+      <h3>Open-Meteo Marine API</h3>
+      <p>Offshore significant wave height (converted from meters to feet) for ~7&ndash;8 days. Free, no key required. Primary wave source.</p>
+    </div>
+    <div class="source-card">
+      <h3>Windy Point Forecast API</h3>
+      <p>GFS model wave height extended out to 16 days. Used as fallback when Open-Meteo Marine has no wave data (days 9+). Free API key required — register at windy.com.</p>
+    </div>
+    <div class="source-card">
+      <h3>NWS Marine Alerts (api.weather.gov)</h3>
+      <p>Active NOAA marine alerts for zone <strong>AMZ630</strong> &mdash; Coastal Waters from Sebastian Inlet to Jupiter Inlet FL, 0&ndash;20 NM. Displayed as a red banner when active.</p>
+    </div>
+    <div class="source-card">
+      <h3>Open-Meteo Historical API</h3>
+      <p>ERA5 reanalysis for past precipitation totals and wind speeds. Used on the Actuals screen. Data has a ~2 day lag.</p>
+    </div>
+    <div class="source-card">
+      <h3>NOAA NDBC Buoy 41114</h3>
+      <p>Real-time buoy near Fort Pierce (27.551&deg;N, 80.225&deg;W). Provides ground truth wave height and conditions. Planned for future wave actuals integration.</p>
+    </div>
+
+    <div class="section-hdr">Location</div>
+    <div class="source-card">
+      <h3>Fort Pierce Inlet, FL</h3>
+      <p>
+        Lat 27.4467&deg; N &nbsp;&middot;&nbsp; Lon 80.3256&deg; W<br>
+        Offshore range: 0&ndash;25 miles<br>
+        NWS Marine Zone: AMZ630<br>
+        Timezone: America/New_York
+      </p>
+    </div>
+  </div>
+
+  <!-- ===== SCREEN 3: ACTUALS ===== -->
+  <div id="screen-actuals" class="screen">
+    <div id="actuals-loading" class="loading-state">
+      <div class="spinner"></div>
+      <span>Loading actuals&hellip;</span>
+    </div>
+    <div id="actuals-content" style="display:none">
+      <div class="info-note" id="actuals-note"></div>
+      <div id="actuals-list"></div>
+    </div>
+    <div id="actuals-err" class="loading-state" style="display:none">
+      <span>Failed to load historical data. Check your connection.</span>
+    </div>
+  </div>
+
+</div><!-- /#main -->
 
 <!-- Firebase SDKs -->
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+
 <script>
-// TODO: Replace with your KevFish Firebase project config
+// ============================================================
+// FIREBASE CONFIG  — replace with your real project values
+// ============================================================
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT.firebaseapp.com",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_PROJECT.firebasestorage.app",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId: "YOUR_APP_ID"
+  apiKey:            "AIzaSyADAztNHCQXGyqkVOfaKFhkB10PxFaD85Q",
+  authDomain:        "kevfish-34949.firebaseapp.com",
+  projectId:         "kevfish-34949",
+  storageBucket:     "kevfish-34949.firebasestorage.app",
+  messagingSenderId: "497711604430",
+  appId:             "1:497711604430:web:f1cb5e5b9e1692658e269f"
 };
 
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
+let db = null;
+let firestoreReady = false;
+try {
+  if (!firebaseConfig.apiKey.startsWith('YOUR_')) {
+    firebase.initializeApp(firebaseConfig);
+    db = firebase.firestore();
+    firestoreReady = true;
+  }
+} catch (e) {
+  console.warn('Firebase not configured:', e.message);
+}
+
+// ============================================================
+// CONSTANTS
+// ============================================================
+const LAT            = 27.4467;
+const LON            = -80.3256;
+const TZ             = 'America/New_York';
+const FORECAST_DAYS  = 16;
+const CALENDAR_DAYS  = 21;
+const WINDY_KEY      = 'YOUR_WINDY_KEY'; // get free key at api.windy.com
+
+// ============================================================
+// SCORING
+// ============================================================
+function scoreRain(p)  { return p < 10 ? 5 : p < 25 ? 4 : p < 50 ? 3 : 1; }
+function scoreWind(v)  { return v <  5 ? 5 : v < 10 ? 4 : v < 20 ? 3 : 1; }
+function scoreWave(ft) {
+  if (ft == null) return null;
+  return ft < 2 ? 5 : ft < 3 ? 4 : ft < 5 ? 3 : 1;
+}
+
+function computeScore(rain, wind, wave) {
+  const wp = scoreWave(wave);
+  if (wp == null) return { pts: scoreRain(rain) + scoreWind(wind), max: 10, waveNA: true };
+  return { pts: scoreRain(rain) + scoreWind(wind) + wp, max: 15, waveNA: false };
+}
+
+function colorOf(pts, max) {
+  if (max === 15) return pts >= 13 ? 'green' : pts >= 9 ? 'yellow' : pts >= 6 ? 'orange' : 'red';
+  // 2-factor max 10
+  return pts >= 9 ? 'green' : pts >= 7 ? 'yellow' : pts >= 4 ? 'orange' : 'red';
+}
+function labelOf(c)   { return {green:'Very Good',yellow:'Good',orange:'Fair',red:'Poor'}[c]; }
+function cRain(v)     { return v < 10 ? 'green' : v < 25 ? 'yellow' : v < 50 ? 'orange' : 'red'; }
+function cWind(v)     { return v <  5 ? 'green' : v < 10 ? 'yellow' : v < 20 ? 'orange' : 'red'; }
+function cWave(ft)    { if (ft == null) return 'grey'; return ft < 2 ? 'green' : ft < 3 ? 'yellow' : ft < 5 ? 'orange' : 'red'; }
+
+// ============================================================
+// DATE HELPERS
+// ============================================================
+const DOW = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const MON = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+function parseDMY(s) {
+  // YYYY-MM-DD → Date at noon local to avoid TZ day shifts
+  const [y, m, d] = s.split('-').map(Number);
+  return new Date(y, m - 1, d, 12);
+}
+
+function fmtDate(s) {
+  const d = parseDMY(s);
+  return { dow: DOW[d.getDay()], mday: `${MON[d.getMonth()]} ${d.getDate()}` };
+}
+
+function todayStr() {
+  return new Date().toLocaleDateString('en-CA', { timeZone: TZ });
+}
+
+function shiftDate(s, n) {
+  const [y, m, d] = s.split('-').map(Number);
+  return new Date(y, m - 1, d + n).toLocaleDateString('en-CA');
+}
+
+// ============================================================
+// API
+// ============================================================
+async function getJSON(url, opts) {
+  const r = await fetch(url, opts);
+  if (!r.ok) throw new Error(`HTTP ${r.status} — ${url}`);
+  return r.json();
+}
+
+async function apiForecast() {
+  return getJSON(
+    `https://api.open-meteo.com/v1/forecast` +
+    `?latitude=${LAT}&longitude=${LON}` +
+    `&daily=precipitation_probability_max,wind_speed_10m_max` +
+    `&wind_speed_unit=mph&timezone=${encodeURIComponent(TZ)}` +
+    `&forecast_days=${FORECAST_DAYS}`
+  );
+}
+
+async function apiMarine() {
+  try {
+    return await getJSON(
+      `https://marine-api.open-meteo.com/v1/marine` +
+      `?latitude=${LAT}&longitude=${LON}` +
+      `&daily=wave_height_max` +
+      `&timezone=${encodeURIComponent(TZ)}&forecast_days=8`
+    );
+  } catch { return null; }
+}
+
+async function apiAlerts() {
+  try {
+    return await getJSON(
+      `https://api.weather.gov/alerts/active?zone=AMZ630`,
+      { headers: { 'User-Agent': 'KevFish/1.0 (offshore fishing forecast)' } }
+    );
+  } catch { return null; }
+}
+
+async function apiWindyWaves(key) {
+  if (!key || key.startsWith('YOUR_')) return null;
+  try {
+    const resp = await fetch('https://api.windy.com/api/point-forecast/v2', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ lat: LAT, lon: LON, model: 'gfs', parameters: ['waves'], key })
+    });
+    if (!resp.ok) return null;
+    const data = await resp.json();
+    // Response key is 'waves' or 'waves-surface' depending on model
+    const waveKey = Object.keys(data).find(k => k.startsWith('waves'));
+    if (!waveKey || !data.ts) return null;
+    // Aggregate hourly values into daily max (meters → feet)
+    const daily = {};
+    data.ts.forEach((ms, i) => {
+      const d  = new Date(ms).toLocaleDateString('en-CA', { timeZone: TZ });
+      const ft = data[waveKey][i] != null ? +(data[waveKey][i] * 3.28084).toFixed(2) : null;
+      if (ft == null) return;
+      if (daily[d] == null || ft > daily[d]) daily[d] = ft;
+    });
+    return daily;
+  } catch { return null; }
+}
+
+async function apiHistorical() {
+  const end   = shiftDate(todayStr(), -2);  // ERA5 has ~2 day lag
+  const start = shiftDate(end, -13);        // 14 days total
+  return getJSON(
+    `https://archive-api.open-meteo.com/v1/archive` +
+    `?latitude=${LAT}&longitude=${LON}` +
+    `&daily=precipitation_sum,wind_speed_10m_max` +
+    `&wind_speed_unit=mph&timezone=${encodeURIComponent(TZ)}` +
+    `&start_date=${start}&end_date=${end}`
+  );
+}
+
+// ============================================================
+// FIRESTORE — save today's forecast, load past predictions
+// ============================================================
+async function saveForecast(dates, rainArr, windArr, waveMap) {
+  if (!firestoreReady) return;
+  const today = todayStr();
+  try {
+    const snap = await db.collection('forecasts').doc(today).get();
+    if (snap.exists) return; // already saved today
+    const data = {};
+    dates.forEach((d, i) => {
+      data[d] = { rain: rainArr[i] ?? null, wind: windArr[i] ?? null, wave: waveMap[d] ?? null };
+    });
+    await db.collection('forecasts').doc(today).set({
+      savedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      data
+    });
+  } catch (e) { console.warn('Firestore save error:', e); }
+}
+
+async function loadPredictions(dates) {
+  if (!firestoreReady) return {};
+  try {
+    const snap = await db.collection('forecasts')
+      .orderBy('savedAt', 'desc').limit(30).get();
+    const out = {};
+    snap.forEach(doc => {
+      const d = doc.data();
+      if (!d.data) return;
+      dates.forEach(date => { if (!out[date] && d.data[date]) out[date] = d.data[date]; });
+    });
+    return out;
+  } catch (e) { console.warn('Firestore read error:', e); return {}; }
+}
+
+// ============================================================
+// RENDER: SCREEN 1 — FORECAST
+// ============================================================
+async function loadForecast() {
+  try {
+    const [fcast, marine, alerts, windyWaves] = await Promise.all([apiForecast(), apiMarine(), apiAlerts(), apiWindyWaves(WINDY_KEY)]);
+
+    // NWS alert banner
+    if (alerts?.features?.length) {
+      const banner = document.getElementById('alert-banner');
+      const hl = alerts.features[0].properties.headline
+              || alerts.features[0].properties.event
+              || 'Marine Advisory Active';
+      banner.textContent = `\u26A0\uFE0F ${hl}`;
+      banner.style.display = 'block';
+    }
+
+    // Build wave lookup (meters → feet)
+    const waveMap = {};
+    marine?.daily?.time?.forEach((d, i) => {
+      const m = marine.daily.wave_height_max[i];
+      waveMap[d] = m != null ? +(m * 3.28084).toFixed(2) : null;
+    });
+
+    const dates   = fcast.daily.time;
+    const rainArr = fcast.daily.precipitation_probability_max;
+    const windArr = fcast.daily.wind_speed_10m_max;
+
+    saveForecast(dates, rainArr, windArr, waveMap); // fire-and-forget
+
+    const cal   = document.getElementById('calendar');
+    const today = todayStr();
+    let waveNAShown = false;
+    cal.innerHTML = '';
+
+    // 16 days with API data
+    dates.forEach((date, i) => {
+      const rain = rainArr[i] ?? 0;
+      const wind = windArr[i] ?? 0;
+      const wave = waveMap[date] ?? windyWaves?.[date] ?? null;
+      const { pts, max, waveNA } = computeScore(rain, wind, wave);
+      const color = colorOf(pts, max);
+      const { dow, mday } = fmtDate(date);
+      if (waveNA) waveNAShown = true;
+
+      const card = document.createElement('div');
+      card.className = `day-card ${color}${date === today ? ' today' : ''}`;
+      card.innerHTML = `
+        <div class="day-date">
+          <div class="dow">${date === today ? 'TODAY' : dow}</div>
+          <div class="mday">${mday}</div>
+        </div>
+        <div class="day-middle">
+          <div class="score-num">${pts}<span class="of">/${max}</span></div>
+          <div class="score-label">${labelOf(color)}${waveNA ? ' *' : ''}</div>
+        </div>
+        <div class="day-badges">
+          <span class="badge ${cRain(rain)}">🌧 ${Math.round(rain)}%</span>
+          <span class="badge ${cWind(wind)}">💨 ${Math.round(wind)} mph</span>
+          <span class="badge ${cWave(wave)}">🌊 ${wave != null ? wave.toFixed(1) + ' ft' : 'N/A'}</span>
+        </div>`;
+      cal.appendChild(card);
+    });
+
+    // Extended placeholder days (17-21)
+    const lastDate = dates[dates.length - 1];
+    for (let n = 1; n <= CALENDAR_DAYS - dates.length; n++) {
+      const ds = shiftDate(lastDate, n);
+      const { dow, mday } = fmtDate(ds);
+      const card = document.createElement('div');
+      card.className = 'day-card grey';
+      card.innerHTML = `
+        <div class="day-date">
+          <div class="dow">${dow}</div>
+          <div class="mday">${mday}</div>
+        </div>
+        <div class="day-middle">
+          <div class="score-num">&mdash;</div>
+          <div class="score-label">Beyond range</div>
+        </div>
+        <div class="day-badges">
+          <span class="badge grey">No data</span>
+        </div>`;
+      cal.appendChild(card);
+    }
+
+    if (waveNAShown) {
+      const note = document.createElement('p');
+      note.className = 'footnote';
+      note.textContent = '* Wave data unavailable — score based on rain & wind only (out of 10)';
+      cal.appendChild(note);
+    }
+
+    const now = new Date().toLocaleTimeString('en-US', { timeZone: TZ, hour: 'numeric', minute: '2-digit' });
+    document.getElementById('forecast-ts').textContent = `Updated ${now}`;
+    document.getElementById('forecast-loading').style.display = 'none';
+    document.getElementById('forecast-content').style.display = 'block';
+
+  } catch (e) {
+    console.error('Forecast error:', e);
+    document.getElementById('forecast-loading').style.display = 'none';
+    document.getElementById('forecast-err').style.display = 'flex';
+  }
+}
+
+// ============================================================
+// RENDER: SCREEN 3 — ACTUALS
+// ============================================================
+let actualsLoaded = false;
+
+async function loadActuals() {
+  if (actualsLoaded) return;
+  actualsLoaded = true;
+
+  try {
+    const hist = await apiHistorical();
+
+    // Reverse so most recent date is first
+    const dates    = [...hist.daily.time].reverse();
+    const precipMM = [...(hist.daily.precipitation_sum || [])].reverse();
+    const windArr  = [...(hist.daily.wind_speed_10m_max || [])].reverse();
+
+    const preds   = await loadPredictions(dates);
+    const hasPred = Object.keys(preds).length > 0;
+
+    document.getElementById('actuals-note').textContent = hasPred
+      ? 'Comparing actual conditions to what was forecast on each date.'
+      : 'Forecast data accumulates as you use the app. The "fcst" column will populate over time.';
+
+    const list = document.getElementById('actuals-list');
+    list.innerHTML = '';
+
+    dates.forEach((date, i) => {
+      const precipIn = precipMM[i] != null ? (precipMM[i] * 0.0394).toFixed(2) : null;
+      const wind     = windArr[i]  != null ? Math.round(windArr[i])             : null;
+      const pred     = preds[date];
+      const { dow, mday } = fmtDate(date);
+
+      const card = document.createElement('div');
+      card.className = 'actuals-card';
+      card.innerHTML = `
+        <div class="actuals-date">${dow} &middot; ${mday}</div>
+        <div class="actuals-row">
+          <span class="a-label">Rain</span>
+          <span class="a-actual">${precipIn != null ? precipIn + '"' : 'N/A'}</span>
+          <span class="a-pred">fcst: ${pred ? Math.round(pred.rain) + '%' : '—'}</span>
+        </div>
+        <div class="actuals-row">
+          <span class="a-label">Wind</span>
+          <span class="a-actual">${wind != null ? wind + ' mph' : 'N/A'}</span>
+          <span class="a-pred">fcst: ${pred ? Math.round(pred.wind) + ' mph' : '—'}</span>
+        </div>
+        <div class="actuals-row">
+          <span class="a-label">Waves</span>
+          <span class="a-actual">N/A</span>
+          <span class="a-pred">fcst: ${pred?.wave != null ? pred.wave.toFixed(1) + ' ft' : '—'}</span>
+        </div>`;
+      list.appendChild(card);
+    });
+
+    document.getElementById('actuals-loading').style.display = 'none';
+    document.getElementById('actuals-content').style.display = 'block';
+
+  } catch (e) {
+    console.error('Actuals error:', e);
+    actualsLoaded = false;
+    document.getElementById('actuals-loading').style.display = 'none';
+    document.getElementById('actuals-err').style.display = 'flex';
+  }
+}
+
+// ============================================================
+// TAB NAVIGATION
+// ============================================================
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('screen-' + btn.dataset.screen).classList.add('active');
+    if (btn.dataset.screen === 'actuals') loadActuals();
+  });
+});
+
+// ============================================================
+// INIT
+// ============================================================
+loadForecast();
 </script>
 </body>
 </html>
