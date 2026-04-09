@@ -307,31 +307,94 @@ body {
   line-height: 1.5;
 }
 
-.actuals-card {
-  background: var(--card);
-  border-radius: 10px;
-  padding: 10px 12px;
-  margin-bottom: 8px;
+/* ---- Actuals Table ---- */
+.act-scroll-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin: 0 -12px;
 }
-.actuals-date {
-  font-size: 0.7rem;
+.act-table {
+  width: 100%;
+  min-width: 500px;
+  border-collapse: collapse;
+}
+.act-table thead th {
+  background: #0d1f35;
   color: var(--accent);
+  font-size: 0.64rem;
   font-weight: 700;
-  letter-spacing: 0.5px;
   text-transform: uppercase;
-  margin-bottom: 7px;
+  letter-spacing: 0.5px;
+  padding: 7px 6px;
+  border-bottom: 2px solid var(--border);
+  text-align: center;
+  white-space: nowrap;
 }
-.actuals-row {
-  display: grid;
-  grid-template-columns: 56px 1fr 1fr;
-  padding: 4px 0;
-  font-size: 0.75rem;
-  border-top: 1px solid var(--border);
+.act-table thead th small {
+  display: block;
+  color: var(--dim);
+  font-size: 0.59rem;
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: 0;
+  margin-top: 1px;
 }
-.actuals-row:first-of-type { border-top: none; }
-.actuals-row .a-label  { color: var(--muted); }
-.actuals-row .a-actual { color: var(--text); font-weight: 600; }
-.actuals-row .a-pred   { color: var(--dim); }
+.act-td {
+  padding: 8px 5px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+}
+tr:last-child .act-td { border-bottom: none; }
+tr:nth-child(odd) .act-td { background: rgba(255,255,255,0.02); }
+.act-td-date { min-width: 82px; text-align: center; }
+.act-date-inp {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-size: 0.62rem;
+  padding: 2px 3px;
+  border-radius: 4px;
+  width: 86px;
+  margin-bottom: 2px;
+}
+.act-dow { font-size: 0.62rem; color: var(--muted); margin-top: 2px; }
+.act-td-score { text-align: center; min-width: 72px; }
+.act-score-row { margin-bottom: 2px; }
+.badge-sm {
+  display: inline-block;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.68rem;
+  font-weight: 700;
+}
+.badge-sm.green  { background: var(--green);  color: #000; }
+.badge-sm.yellow { background: var(--yellow); color: #000; }
+.badge-sm.orange { background: var(--orange); color: #000; }
+.badge-sm.red    { background: var(--red);    color: #fff; }
+.badge-sm.grey   { background: #445;          color: #aaa; }
+.act-fon { font-size: 0.57rem; color: var(--dim); margin-bottom: 2px; }
+.act-delta { font-size: 0.75rem; font-weight: 700; color: var(--muted); margin-top: 2px; }
+.act-delta.pos { color: #58a6ff; }
+.act-delta.neg { color: #f9826c; }
+.act-label-sm { font-size: 0.56rem; color: var(--dim); line-height: 1.3; margin-top: 2px; }
+.act-td-factor { min-width: 88px; }
+.act-frow {
+  display: flex;
+  align-items: baseline;
+  gap: 3px;
+  padding: 2px 0;
+  font-size: 0.68rem;
+  color: var(--text);
+  flex-wrap: wrap;
+}
+.act-frow.actl {
+  color: var(--muted);
+  border-top: 1px solid rgba(255,255,255,0.06);
+  padding-top: 3px;
+  margin-top: 1px;
+}
+.act-lbl { font-size: 0.57rem; font-weight: 700; color: var(--accent); min-width: 9px; }
+.act-pts { font-size: 0.6rem; color: var(--dim); }
 
 /* ---- Settings Screen ---- */
 .settings-section {
@@ -602,8 +665,21 @@ body {
       <span>Loading actuals&hellip;</span>
     </div>
     <div id="actuals-content" style="display:none">
-      <div class="info-note" id="actuals-note"></div>
-      <div id="actuals-list"></div>
+      <div class="act-scroll-wrap">
+        <table class="act-table">
+          <thead>
+            <tr>
+              <th><small>tap to change</small>Date</th>
+              <th>Score<small>F / A / &Delta;</small></th>
+              <th>Rain<small>F / A</small></th>
+              <th>Wind<small>F / A</small></th>
+              <th>Waves<small>F / A</small></th>
+            </tr>
+          </thead>
+          <tbody id="actuals-tbody"></tbody>
+        </table>
+      </div>
+      <p class="footnote" id="actuals-note" style="margin-top:8px"></p>
     </div>
     <div id="actuals-err" class="loading-state" style="display:none">
       <span>Failed to load historical data. Check your connection.</span>
@@ -1079,7 +1155,7 @@ async function apiCalibration() {
 // ============================================================
 // FIRESTORE — save today's forecast, load past predictions
 // ============================================================
-async function saveForecast(dates, rainArr, windArr, waveMap) {
+async function saveForecast(dates, rainArr, windArr, windDirArr, waveMap, windyWaves) {
   if (!firestoreReady) return;
   const today = todayStr();
   try {
@@ -1087,7 +1163,12 @@ async function saveForecast(dates, rainArr, windArr, waveMap) {
     if (snap.exists) return; // already saved today
     const data = {};
     dates.forEach((d, i) => {
-      data[d] = { rain: rainArr[i] ?? null, wind: windArr[i] ?? null, wave: waveMap[d] ?? null };
+      data[d] = {
+        rain:    rainArr[i]    ?? null,
+        wind:    windArr[i]    ?? null,
+        windDir: windDirArr[i] ?? null,
+        wave:    waveMap[d]    ?? windyWaves?.[d] ?? null
+      };
     });
     await db.collection('forecasts').doc(today).set({
       savedAt: firebase.firestore.FieldValue.serverTimestamp(),
@@ -1096,19 +1177,67 @@ async function saveForecast(dates, rainArr, windArr, waveMap) {
   } catch (e) { console.warn('Firestore save error:', e); }
 }
 
-async function loadPredictions(dates) {
+let actualsAllDocs = [];
+
+async function loadForecastsForDates(targetDates) {
   if (!firestoreReady) return {};
   try {
-    const snap = await db.collection('forecasts')
-      .orderBy('savedAt', 'desc').limit(30).get();
+    if (!actualsAllDocs.length) {
+      const snap = await db.collection('forecasts').orderBy('savedAt', 'desc').limit(30).get();
+      snap.forEach(doc => {
+        if (doc.data()?.data) actualsAllDocs.push({ id: doc.id, data: doc.data().data });
+      });
+    }
     const out = {};
-    snap.forEach(doc => {
-      const d = doc.data();
-      if (!d.data) return;
-      dates.forEach(date => { if (!out[date] && d.data[date]) out[date] = d.data[date]; });
+    targetDates.forEach(date => {
+      // Most recent doc saved before the target date that has forecast data for it
+      const found = actualsAllDocs.find(d => d.id < date && d.data[date]);
+      if (found) { out[date] = { ...found.data[date], forecastedOn: found.id }; return; }
+      // Fallback: same-day doc if that's all we have
+      const same = actualsAllDocs.find(d => d.data[date]);
+      if (same)  out[date] = { ...same.data[date], forecastedOn: same.id };
     });
     return out;
   } catch (e) { console.warn('Firestore read error:', e); return {}; }
+}
+
+async function apiActualsHourly(startDate, endDate) {
+  try {
+    const [weather, waves] = await Promise.all([
+      getJSON(
+        `https://archive-api.open-meteo.com/v1/archive` +
+        `?latitude=${LAT}&longitude=${LON}` +
+        `&hourly=precipitation,wind_speed_10m,wind_direction_10m` +
+        `&wind_speed_unit=mph&timezone=${encodeURIComponent(TZ)}` +
+        `&start_date=${startDate}&end_date=${endDate}`
+      ),
+      getJSON(
+        `https://marine-api.open-meteo.com/v1/marine` +
+        `?latitude=${MARINE_LAT}&longitude=${MARINE_LON}` +
+        `&hourly=wave_height` +
+        `&timezone=${encodeURIComponent(TZ)}` +
+        `&start_date=${startDate}&end_date=${endDate}`
+      ).catch(() => null)
+    ]);
+    const precipArr  = weather?.hourly?.precipitation      || [];
+    const windSpArr  = weather?.hourly?.wind_speed_10m     || [];
+    const windDirArr = weather?.hourly?.wind_direction_10m || [];
+    const waveArr    = waves?.hourly?.wave_height          || [];
+    const result = {};
+    let d = startDate, dayIdx = 0;
+    while (d <= endDate) {
+      const h = dayIdx * 24 + 10; // index for 10 AM
+      result[d] = {
+        precipIn: precipArr[h]  != null ? +(precipArr[h]  * 0.0394).toFixed(2) : null,
+        wind:     windSpArr[h]  != null ? Math.round(windSpArr[h])              : null,
+        windDir:  windDirArr[h] != null ? Math.round(windDirArr[h])             : null,
+        wave:     waveArr[h]    != null ? +(waveArr[h]    * 3.28084).toFixed(2) : null
+      };
+      d = shiftDate(d, 1);
+      dayIdx++;
+    }
+    return result;
+  } catch { return {}; }
 }
 
 // ============================================================
@@ -1235,7 +1364,7 @@ async function loadForecast() {
     // Calibration factor derived from last 7 days of actual wave data
     const calibFactor = computeCalibration(calibData);
 
-    saveForecast(dates, rainArr, windArr, waveMap); // fire-and-forget
+    saveForecast(dates, rainArr, windArr, windDirArr, waveMap, windyWaves); // fire-and-forget
 
     // Cache data so settings changes can re-render without re-fetching
     cachedForecast = { dates, rainArr, windArr, windDirArr, waveMap, windyWaves, calibFactor, calibData };
@@ -1256,6 +1385,110 @@ async function loadForecast() {
 // ============================================================
 // RENDER: SCREEN 3 — ACTUALS
 // ============================================================
+// ACTUALS SCREEN — Forecast vs. Actual comparison table
+// ============================================================
+function scoreActualRain(precipIn) {
+  if (precipIn == null) return null;
+  if (precipIn === 0)   return points.rain[0]; // no rain
+  if (precipIn < 0.10)  return points.rain[1]; // light
+  if (precipIn < 0.50)  return points.rain[2]; // moderate
+  return points.rain[3];                        // heavy
+}
+
+function buildActualsRowHTML(date, fcst, actl) {
+  const { dow, mday } = fmtDate(date);
+
+  // Forecast points
+  const fRainPts = fcst?.rain    != null ? scoreRain(fcst.rain)           : null;
+  const fWindPts = fcst?.wind    != null ? scoreWind(fcst.wind)           : null;
+  const fWavePts = fcst?.wave    != null ? scoreWave(fcst.wave)           : null;
+  const fTotal   = (fRainPts ?? 0) + (fWindPts ?? 0) + (fWavePts ?? 0);
+  const fMax     = fWavePts != null ? currentMax() : points.rain[0] + points.wind[0];
+  const fColor   = fcst ? colorOf(fTotal, fMax) : 'grey';
+
+  // Actual points
+  const aRainPts = actl?.precipIn != null ? scoreActualRain(actl.precipIn) : null;
+  const aWindPts = actl?.wind     != null ? scoreWind(actl.wind)           : null;
+  const aWavePts = actl?.wave     != null ? scoreWave(actl.wave)           : null;
+  const aTotal   = (aRainPts ?? 0) + (aWindPts ?? 0) + (aWavePts ?? 0);
+  const aMax     = aWavePts != null ? currentMax() : points.rain[0] + points.wind[0];
+  const aColor   = actl ? colorOf(aTotal, aMax) : 'grey';
+
+  // Delta (forecast minus actual — positive = forecast was optimistic)
+  const delta    = fcst && actl ? fTotal - aTotal : null;
+  const deltaStr = delta == null ? '—' : (delta > 0 ? '+' + delta : String(delta));
+  const deltaCls = delta == null ? '' : delta > 0 ? ' pos' : delta < 0 ? ' neg' : '';
+
+  // Display strings
+  const fRainStr = fcst?.rain    != null ? Math.round(fcst.rain) + '%'    : '—';
+  const fWindStr = fcst?.wind    != null
+    ? Math.round(fcst.wind) + ' mph' + (fcst.windDir != null ? ' ' + degToCompass(fcst.windDir) : '')
+    : '—';
+  const fWaveStr = fcst?.wave    != null ? fcst.wave.toFixed(1) + ' ft'   : '—';
+  const aRainStr = actl?.precipIn != null ? actl.precipIn.toFixed(2) + '"' : '—';
+  const aWindStr = actl?.wind    != null
+    ? actl.wind + ' mph' + (actl.windDir != null ? ' ' + degToCompass(actl.windDir) : '')
+    : '—';
+  const aWaveStr = actl?.wave    != null ? actl.wave.toFixed(1) + ' ft'   : '—';
+
+  const pts  = n  => n  != null ? `<span class="act-pts">${n}pt</span>` : '';
+  const fon  = fcst?.forecastedOn ? `<div class="act-fon">fcst ${fcst.forecastedOn.slice(5)}</div>` : '';
+
+  return `
+    <td class="act-td act-td-date">
+      <input type="date" class="act-date-inp" value="${date}">
+      <div class="act-dow">${dow} ${mday}</div>
+    </td>
+    <td class="act-td act-td-score">
+      <div class="act-score-row"><span class="badge-sm ${fColor}">${fcst ? fTotal + '/' + fMax : '—'}</span></div>
+      ${fon}
+      <div class="act-score-row"><span class="badge-sm ${aColor}">${actl ? aTotal + '/' + aMax : '—'}</span></div>
+      <div class="act-delta${deltaCls}">${deltaStr}</div>
+      ${actl ? `<div class="act-label-sm">${labelOf(aColor)}</div>` : ''}
+    </td>
+    <td class="act-td act-td-factor">
+      <div class="act-frow"><span class="act-lbl">F</span>${fRainStr} ${pts(fRainPts)}</div>
+      <div class="act-frow actl"><span class="act-lbl">A</span>${aRainStr} ${pts(aRainPts)}</div>
+    </td>
+    <td class="act-td act-td-factor">
+      <div class="act-frow"><span class="act-lbl">F</span>${fWindStr} ${pts(fWindPts)}</div>
+      <div class="act-frow actl"><span class="act-lbl">A</span>${aWindStr} ${pts(aWindPts)}</div>
+    </td>
+    <td class="act-td act-td-factor">
+      <div class="act-frow"><span class="act-lbl">F</span>${fWaveStr} ${pts(fWavePts)}</div>
+      <div class="act-frow actl"><span class="act-lbl">A</span>${aWaveStr} ${pts(aWavePts)}</div>
+    </td>`;
+}
+
+let actualsRowCache = {}; // date → { forecast, actual }
+
+async function refreshActualsRow(tr, newDate) {
+  tr.dataset.date = newDate;
+  if (!actualsRowCache[newDate]) {
+    const era5Cutoff = shiftDate(todayStr(), -2);
+    const [fcsts, actls] = await Promise.all([
+      loadForecastsForDates([newDate]),
+      newDate <= era5Cutoff ? apiActualsHourly(newDate, newDate) : Promise.resolve({})
+    ]);
+    actualsRowCache[newDate] = {
+      forecast: fcsts[newDate]  ?? null,
+      actual:   actls[newDate]  ?? null
+    };
+  }
+  const { forecast, actual } = actualsRowCache[newDate];
+  tr.innerHTML = buildActualsRowHTML(newDate, forecast, actual);
+  bindRowDateInput(tr);
+}
+
+function bindRowDateInput(tr) {
+  const inp = tr.querySelector('.act-date-inp');
+  if (!inp) return;
+  inp.addEventListener('change', async e => {
+    const v = e.target.value;
+    if (v) await refreshActualsRow(tr, v);
+  });
+}
+
 let actualsLoaded = false;
 
 async function loadActuals() {
@@ -1263,50 +1496,40 @@ async function loadActuals() {
   actualsLoaded = true;
 
   try {
-    const hist = await apiHistorical();
+    const era5End   = shiftDate(todayStr(), -2); // ERA5 has ~2 day lag
+    const era5Start = shiftDate(era5End, -6);    // 7 days total
 
-    // Reverse so most recent date is first
-    const dates    = [...hist.daily.time].reverse();
-    const precipMM = [...(hist.daily.precipitation_sum || [])].reverse();
-    const windArr  = [...(hist.daily.wind_speed_10m_max || [])].reverse();
+    // Build date list oldest→newest
+    const dates = [];
+    for (let d = era5Start; d <= era5End; d = shiftDate(d, 1)) dates.push(d);
 
-    const preds   = await loadPredictions(dates);
-    const hasPred = Object.keys(preds).length > 0;
+    const [fcsts, actls] = await Promise.all([
+      loadForecastsForDates(dates),
+      apiActualsHourly(era5Start, era5End)
+    ]);
 
-    document.getElementById('actuals-note').textContent = hasPred
-      ? 'Comparing actual conditions to what was forecast on each date.'
-      : 'Forecast data accumulates as you use the app. The "fcst" column will populate over time.';
-
-    const list = document.getElementById('actuals-list');
-    list.innerHTML = '';
-
-    dates.forEach((date, i) => {
-      const precipIn = precipMM[i] != null ? (precipMM[i] * 0.0394).toFixed(2) : null;
-      const wind     = windArr[i]  != null ? Math.round(windArr[i])             : null;
-      const pred     = preds[date];
-      const { dow, mday } = fmtDate(date);
-
-      const card = document.createElement('div');
-      card.className = 'actuals-card';
-      card.innerHTML = `
-        <div class="actuals-date">${dow} &middot; ${mday}</div>
-        <div class="actuals-row">
-          <span class="a-label">Rain</span>
-          <span class="a-actual">${precipIn != null ? precipIn + '"' : 'N/A'}</span>
-          <span class="a-pred">fcst: ${pred ? Math.round(pred.rain) + '%' : '—'}</span>
-        </div>
-        <div class="actuals-row">
-          <span class="a-label">Wind</span>
-          <span class="a-actual">${wind != null ? wind + ' mph' : 'N/A'}</span>
-          <span class="a-pred">fcst: ${pred ? Math.round(pred.wind) + ' mph' : '—'}</span>
-        </div>
-        <div class="actuals-row">
-          <span class="a-label">Waves</span>
-          <span class="a-actual">N/A</span>
-          <span class="a-pred">fcst: ${pred?.wave != null ? pred.wave.toFixed(1) + ' ft' : '—'}</span>
-        </div>`;
-      list.appendChild(card);
+    // Cache all loaded data
+    dates.forEach(dt => {
+      actualsRowCache[dt] = {
+        forecast: fcsts[dt] ?? null,
+        actual:   actls[dt] ?? null
+      };
     });
+
+    const tbody = document.getElementById('actuals-tbody');
+    tbody.innerHTML = '';
+    [...dates].reverse().forEach(dt => { // most recent first
+      const tr = document.createElement('tr');
+      tr.dataset.date = dt;
+      tr.innerHTML = buildActualsRowHTML(dt, actualsRowCache[dt].forecast, actualsRowCache[dt].actual);
+      tbody.appendChild(tr);
+      bindRowDateInput(tr);
+    });
+
+    const hasFcst = dates.some(dt => actualsRowCache[dt].forecast != null);
+    document.getElementById('actuals-note').textContent = hasFcst
+      ? 'F = most recent prior forecast. A = actual at 10 AM. Tap any date to look up a different day.'
+      : 'Forecast data builds as you use the app — F columns populate over time. A = actual at 10 AM.';
 
     document.getElementById('actuals-loading').style.display = 'none';
     document.getElementById('actuals-content').style.display = 'block';
