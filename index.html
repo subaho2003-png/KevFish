@@ -925,13 +925,62 @@ const DEFAULT_POINTS = {
   tiers: [14, 10, 7]   // lower limits for VGE, GVG, FG; Poor-Fair = 0 to tiers[2]-1
 };
 
-function loadPoints() {
+function parseStoredPoints(raw) {
+  const loaded = JSON.parse(raw);
+  if (!loaded.tiers) loaded.tiers = [...DEFAULT_POINTS.tiers];
+  return loaded;
+}
+
+async function savePointsToFirestore(p) {
+  localStorage.setItem('kevfish_points', JSON.stringify(p));
+  if (!firestoreReady) return;
   try {
-    const s = localStorage.getItem('kevfish_points');
-    const loaded = s ? JSON.parse(s) : JSON.parse(JSON.stringify(DEFAULT_POINTS));
-    if (!loaded.tiers) loaded.tiers = [...DEFAULT_POINTS.tiers]; // migrate old saves
-    return loaded;
-  } catch { return JSON.parse(JSON.stringify(DEFAULT_POINTS)); }
+    await db.collection('settings').doc('points').set({
+      rain: p.rain, wind: p.wind, wave: p.wave, tiers: p.tiers,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+  } catch (e) { console.warn('Settings save failed:', e.message); }
+}
+
+async function initPoints() {
+  // Try Firestore first (shared across all devices)
+  if (firestoreReady) {
+    try {
+      const snap = await db.collection('settings').doc('points').get();
+      if (snap.exists) {
+        const d = snap.data();
+        const loaded = {
+          rain:  d.rain  || [...DEFAULT_POINTS.rain],
+          wind:  d.wind  || [...DEFAULT_POINTS.wind],
+          wave:  d.wave  || [...DEFAULT_POINTS.wave],
+          tiers: d.tiers || [...DEFAULT_POINTS.tiers]
+        };
+        validateTiers(loaded);
+        points        = loaded;
+        pendingPoints = JSON.parse(JSON.stringify(points));
+        localStorage.setItem('kevfish_points', JSON.stringify(points));
+        return;
+      }
+      // Nothing in Firestore yet — migrate from localStorage if present
+      const ls = localStorage.getItem('kevfish_points');
+      if (ls) {
+        const loaded = parseStoredPoints(ls);
+        validateTiers(loaded);
+        points        = loaded;
+        pendingPoints = JSON.parse(JSON.stringify(points));
+        savePointsToFirestore(points); // push to Firestore for first time
+        return;
+      }
+      // Pure defaults — save them to Firestore
+      savePointsToFirestore(points);
+      return;
+    } catch (e) { console.warn('Settings load from Firestore failed:', e.message); }
+  }
+  // Fallback: localStorage only
+  try {
+    const ls = localStorage.getItem('kevfish_points');
+    if (ls) { points = parseStoredPoints(ls); pendingPoints = JSON.parse(JSON.stringify(points)); }
+  } catch {}
 }
 
 function currentMax(src) {
@@ -947,8 +996,8 @@ function validateTiers(p) {
   if (p.tiers[2] < 1)              p.tiers[2] = 1;
 }
 
-let points = loadPoints();
-let pendingPoints = JSON.parse(JSON.stringify(points));
+let points        = JSON.parse(JSON.stringify(DEFAULT_POINTS));
+let pendingPoints = JSON.parse(JSON.stringify(DEFAULT_POINTS));
 
 // ============================================================
 // SCORING
@@ -1783,7 +1832,7 @@ document.getElementById('modal-yes').addEventListener('click', () => {
   points = JSON.parse(JSON.stringify(pendingPoints));
   validateTiers(points);
   pendingPoints = JSON.parse(JSON.stringify(points));
-  localStorage.setItem('kevfish_points', JSON.stringify(points));
+  savePointsToFirestore(points);
   document.getElementById('confirm-modal').style.display = 'none';
   renderSettings();
   if (cachedForecast) renderCalendar(cachedForecast);
@@ -1860,8 +1909,11 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
 // ============================================================
 // INIT
 // ============================================================
-updateSourcesTable(); // populate Sources score table on first load
-loadForecast();
+(async () => {
+  await initPoints();          // load shared settings from Firestore first
+  updateSourcesTable();        // populate Sources score table
+  loadForecast();
+})();
 </script>
 </body>
 </html>
