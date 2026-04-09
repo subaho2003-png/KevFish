@@ -203,9 +203,10 @@ body {
   color: var(--muted);
 }
 .day-middle .score-label {
-  font-size: 0.69rem;
+  font-size: 0.62rem;
   color: var(--muted);
   margin-top: 1px;
+  line-height: 1.25;
 }
 
 .day-badges {
@@ -492,7 +493,7 @@ body {
   <button class="tab-btn active" data-screen="forecast">Forecast</button>
   <button class="tab-btn" data-screen="sources">Sources</button>
   <button class="tab-btn" data-screen="actuals">Actuals</button>
-  <button class="tab-btn" data-screen="settings">Settings</button>
+  <button class="tab-btn" data-screen="settings" id="settings-tab">Settings</button>
 </nav>
 
 <div id="main">
@@ -506,10 +507,10 @@ body {
     <div id="forecast-content" style="display:none">
       <div class="updated-ts" id="forecast-ts"></div>
       <div class="legend">
-        <div class="legend-item green"><div class="legend-dot"></div>Very Good</div>
-        <div class="legend-item yellow"><div class="legend-dot"></div>Good</div>
-        <div class="legend-item orange"><div class="legend-dot"></div>Fair</div>
-        <div class="legend-item red"><div class="legend-dot"></div>Poor</div>
+        <div class="legend-item green"><div class="legend-dot"></div>V.Good–Excellent</div>
+        <div class="legend-item yellow"><div class="legend-dot"></div>Good–V.Good</div>
+        <div class="legend-item orange"><div class="legend-dot"></div>Fair–Good</div>
+        <div class="legend-item red"><div class="legend-dot"></div>Poor–Fair</div>
       </div>
       <div id="calendar"></div>
     </div>
@@ -548,11 +549,11 @@ body {
     </div>
 
     <div class="score-table">
-      <div class="score-table-hdr">Total Score &rarr; Condition</div>
-      <div class="score-row"><span class="range">14&ndash;16 pts</span><span class="badge green">Very Good &ndash; Excellent</span></div>
-      <div class="score-row"><span class="range">10&ndash;13 pts</span><span class="badge yellow">Good &ndash; Very Good</span></div>
-      <div class="score-row"><span class="range">7&ndash;9 pts</span><span class="badge orange">Fair &ndash; Good</span></div>
-      <div class="score-row"><span class="range">3&ndash;6 pts</span><span class="badge red">Poor &ndash; Fair</span></div>
+      <div class="score-table-hdr">Total Score &rarr; Condition <span id="src-max-note" style="font-weight:400;color:var(--muted);font-size:0.75rem"></span></div>
+      <div class="score-row" id="src-tier-0"><span class="range"></span><span class="badge green">Very Good &ndash; Excellent</span></div>
+      <div class="score-row" id="src-tier-1"><span class="range"></span><span class="badge yellow">Good &ndash; Very Good</span></div>
+      <div class="score-row" id="src-tier-2"><span class="range"></span><span class="badge orange">Fair &ndash; Good</span></div>
+      <div class="score-row" id="src-tier-3"><span class="range"></span><span class="badge red">Poor &ndash; Fair</span></div>
     </div>
 
     <div class="section-hdr">Data Sources</div>
@@ -612,6 +613,40 @@ body {
   <!-- ===== SCREEN 4: SETTINGS ===== -->
   <div id="screen-settings" class="screen">
     <p class="settings-note">Adjust points awarded for each condition tier. Yellow = pending change. Press Apply to confirm.</p>
+
+    <div class="settings-section">
+      <div class="settings-section-hdr">Overall Score Thresholds &nbsp;<span id="max-score-display" style="font-weight:400;color:var(--muted);font-size:0.75rem"></span></div>
+      <div class="threshold-row" data-factor="tiers" data-idx="0" tabindex="0">
+        <span class="threshold-label"><span style="color:var(--green)">&#9679;</span> Very Good &ndash; Excellent min</span>
+        <div class="threshold-ctrl">
+          <button class="arrow-btn" data-dir="-1">▼</button>
+          <span class="threshold-val" id="tv-tiers-0"></span>
+          <button class="arrow-btn" data-dir="1">▲</button>
+        </div>
+      </div>
+      <div class="threshold-row" data-factor="tiers" data-idx="1" tabindex="0">
+        <span class="threshold-label"><span style="color:var(--yellow)">&#9679;</span> Good &ndash; Very Good min</span>
+        <div class="threshold-ctrl">
+          <button class="arrow-btn" data-dir="-1">▼</button>
+          <span class="threshold-val" id="tv-tiers-1"></span>
+          <button class="arrow-btn" data-dir="1">▲</button>
+        </div>
+      </div>
+      <div class="threshold-row" data-factor="tiers" data-idx="2" tabindex="0">
+        <span class="threshold-label"><span style="color:var(--orange)">&#9679;</span> Fair &ndash; Good min</span>
+        <div class="threshold-ctrl">
+          <button class="arrow-btn" data-dir="-1">▼</button>
+          <span class="threshold-val" id="tv-tiers-2"></span>
+          <button class="arrow-btn" data-dir="1">▲</button>
+        </div>
+      </div>
+      <div class="threshold-row">
+        <span class="threshold-label"><span style="color:var(--red)">&#9679;</span> Poor &ndash; Fair</span>
+        <div class="threshold-ctrl">
+          <span class="threshold-val" id="tv-tiers-auto" style="color:var(--dim)"></span>
+        </div>
+      </div>
+    </div>
 
     <div class="settings-section">
       <div class="settings-section-hdr">Rain — Points per Tier</div>
@@ -788,16 +823,32 @@ const WINDY_KEY      = 'WFodLkRZJDFfVcqtF8VNVDo4H944y89g';
 // wave:  0-2   | 2-3    | 3-5    | 5+    ft
 // ============================================================
 const DEFAULT_POINTS = {
-  rain: [5, 4, 3, 1],
-  wind: [5, 4, 3, 1],
-  wave: [6, 5, 3, 1]
+  rain:  [5, 4, 3, 1],
+  wind:  [5, 4, 3, 1],
+  wave:  [6, 5, 3, 1],
+  tiers: [14, 10, 7]   // lower limits for VGE, GVG, FG; Poor-Fair = 0 to tiers[2]-1
 };
 
 function loadPoints() {
   try {
     const s = localStorage.getItem('kevfish_points');
-    return s ? JSON.parse(s) : JSON.parse(JSON.stringify(DEFAULT_POINTS));
+    const loaded = s ? JSON.parse(s) : JSON.parse(JSON.stringify(DEFAULT_POINTS));
+    if (!loaded.tiers) loaded.tiers = [...DEFAULT_POINTS.tiers]; // migrate old saves
+    return loaded;
   } catch { return JSON.parse(JSON.stringify(DEFAULT_POINTS)); }
+}
+
+function currentMax(src) {
+  const p = src || points;
+  return p.rain[0] + p.wind[0] + p.wave[0];
+}
+
+function validateTiers(p) {
+  const max = currentMax(p);
+  if (p.tiers[0] > max)            p.tiers[0] = max;
+  if (p.tiers[1] >= p.tiers[0])    p.tiers[1] = p.tiers[0] - 1;
+  if (p.tiers[2] >= p.tiers[1])    p.tiers[2] = p.tiers[1] - 1;
+  if (p.tiers[2] < 1)              p.tiers[2] = 1;
 }
 
 let points = loadPoints();
@@ -834,13 +885,21 @@ function computeScore(rain, wind, wave) {
   return { pts: scoreRain(rain) + scoreWind(wind) + wp, max: maxFull, waveNA: false };
 }
 
-// Color thresholds auto-scale with max score (87.5% / 62.5% / 43.75%)
 function colorOf(pts, max) {
   if (max === 0) return 'grey';
-  const pct = pts / max;
-  return pct >= 0.875 ? 'green' : pct >= 0.625 ? 'yellow' : pct >= 0.4375 ? 'orange' : 'red';
+  if (pts >= points.tiers[0]) return 'green';
+  if (pts >= points.tiers[1]) return 'yellow';
+  if (pts >= points.tiers[2]) return 'orange';
+  return 'red';
 }
-function labelOf(c)   { return {green:'Very Good',yellow:'Good',orange:'Fair',red:'Poor'}[c]; }
+function labelOf(c) {
+  return {
+    green:  'Very Good \u2013 Excellent',
+    yellow: 'Good \u2013 Very Good',
+    orange: 'Fair \u2013 Good',
+    red:    'Poor \u2013 Fair'
+  }[c];
+}
 function cRain(v)  { return v < 10 ? 'green' : v < 25 ? 'yellow' : v < 50 ? 'orange' : 'red'; }
 function cWind(v)  { return v <  5 ? 'green' : v < 10 ? 'yellow' : v < 20 ? 'orange' : 'red'; }
 function cWave(ft) { if (ft==null) return 'grey'; return ft < 2 ? 'green' : ft < 3 ? 'yellow' : ft < 5 ? 'orange' : 'red'; }
@@ -1260,13 +1319,31 @@ async function loadActuals() {
 // ============================================================
 // SETTINGS SCREEN
 // ============================================================
-const TIER_LABELS = {
-  rain: ['0–10%', '10–25%', '25–50%', '50–100%'],
-  wind: ['0–5 mph', '5–10 mph', '10–20 mph', '20+ mph'],
-  wave: ['0–2 ft', '2–3 ft', '3–5 ft', '5+ ft']
+const PT_LABELS = {
+  rain:  ['0–10%', '10–25%', '25–50%', '50–100%'],
+  wind:  ['0–5 mph', '5–10 mph', '10–20 mph', '20+ mph'],
+  wave:  ['0–2 ft', '2–3 ft', '3–5 ft', '5+ ft'],
+  tiers: ['Very Good–Excellent min', 'Good–Very Good min', 'Fair–Good min']
 };
 
 function renderSettings() {
+  const pMax = currentMax(pendingPoints);
+
+  // Max score display
+  const maxEl = document.getElementById('max-score-display');
+  if (maxEl) maxEl.textContent = `(Max: ${pMax} pts)`;
+
+  // Tier thresholds
+  pendingPoints.tiers.forEach((val, idx) => {
+    const el = document.getElementById(`tv-tiers-${idx}`);
+    if (!el) return;
+    el.textContent = val + ' pts';
+    el.classList.toggle('changed', val !== points.tiers[idx]);
+  });
+  const autoEl = document.getElementById('tv-tiers-auto');
+  if (autoEl) autoEl.textContent = `0 – ${pendingPoints.tiers[2] - 1} pts`;
+
+  // Point values
   ['rain','wind','wave'].forEach(factor => {
     pendingPoints[factor].forEach((val, idx) => {
       const el = document.getElementById(`tv-${factor}-${idx}`);
@@ -1275,24 +1352,53 @@ function renderSettings() {
       el.classList.toggle('changed', val !== points[factor][idx]);
     });
   });
+
+  // Keep Sources table in sync
+  updateSourcesTable();
+}
+
+function updateSourcesTable() {
+  const max = currentMax(points);
+  const noteEl = document.getElementById('src-max-note');
+  if (noteEl) noteEl.textContent = `(max ${max} pts)`;
+  const ranges = [
+    `${points.tiers[0]}–${max}`,
+    `${points.tiers[1]}–${points.tiers[0] - 1}`,
+    `${points.tiers[2]}–${points.tiers[1] - 1}`,
+    `0–${points.tiers[2] - 1}`
+  ];
+  ranges.forEach((r, i) => {
+    const row = document.getElementById(`src-tier-${i}`);
+    if (row) row.querySelector('.range').textContent = r + ' pts';
+  });
 }
 
 function adjustPoint(factor, idx, dir) {
-  let newVal = pendingPoints[factor][idx] + dir;
-  newVal = Math.min(Math.max(newVal, 0), 10);
-  pendingPoints[factor][idx] = newVal;
+  if (factor === 'tiers') {
+    const pMax = currentMax(pendingPoints);
+    const arr  = pendingPoints.tiers;
+    const hi   = idx === 0 ? pMax : arr[idx - 1] - 1;
+    const lo   = idx === arr.length - 1 ? 1 : arr[idx + 1] + 1;
+    arr[idx]   = Math.min(Math.max(arr[idx] + dir, lo), hi);
+  } else {
+    pendingPoints[factor][idx] = Math.min(Math.max(pendingPoints[factor][idx] + dir, 0), 10);
+    validateTiers(pendingPoints); // re-clamp tiers if max changed
+  }
   renderSettings();
 }
 
 function buildChangesSummary() {
   const lines = [];
-  const labels = { rain: 'Rain', wind: 'Wind', wave: 'Wave' };
+  const fLabels = { rain: 'Rain', wind: 'Wind', wave: 'Wave' };
   ['rain','wind','wave'].forEach(factor => {
     pendingPoints[factor].forEach((val, idx) => {
-      if (val !== points[factor][idx]) {
-        lines.push(`<span class="change-line">${labels[factor]} ${TIER_LABELS[factor][idx]}: ${points[factor][idx]} pts → ${val} pts</span>`);
-      }
+      if (val !== points[factor][idx])
+        lines.push(`<span class="change-line">${fLabels[factor]} ${PT_LABELS[factor][idx]}: ${points[factor][idx]} → ${val} pts</span>`);
     });
+  });
+  pendingPoints.tiers.forEach((val, idx) => {
+    if (val !== points.tiers[idx])
+      lines.push(`<span class="change-line">${PT_LABELS.tiers[idx]}: ${points.tiers[idx]} → ${val} pts</span>`);
   });
   return lines;
 }
@@ -1306,6 +1412,8 @@ document.getElementById('btn-apply').addEventListener('click', () => {
 
 document.getElementById('modal-yes').addEventListener('click', () => {
   points = JSON.parse(JSON.stringify(pendingPoints));
+  validateTiers(points);
+  pendingPoints = JSON.parse(JSON.stringify(points));
   localStorage.setItem('kevfish_points', JSON.stringify(points));
   document.getElementById('confirm-modal').style.display = 'none';
   renderSettings();
@@ -1322,9 +1430,10 @@ document.getElementById('btn-reset').addEventListener('click', () => {
 });
 
 // Arrow button clicks + keyboard support
-document.querySelectorAll('.threshold-row').forEach(row => {
+document.querySelectorAll('.threshold-row[data-factor]').forEach(row => {
   const factor = row.dataset.factor;
   const idx    = parseInt(row.dataset.idx);
+  if (isNaN(idx)) return;
   row.querySelectorAll('.arrow-btn').forEach(btn => {
     btn.addEventListener('click', () => adjustPoint(factor, idx, parseInt(btn.dataset.dir)));
   });
@@ -1335,22 +1444,54 @@ document.querySelectorAll('.threshold-row').forEach(row => {
 });
 
 // ============================================================
-// TAB NAVIGATION
+// TAB NAVIGATION + SETTINGS UNLOCK SEQUENCE
+// Sequence: Actuals → Sources → Forecast (in that order)
 // ============================================================
+const UNLOCK_SEQ = ['actuals', 'sources', 'forecast'];
+let unlockStep      = 0;
+let settingsUnlocked = false;
+
+// Settings tab hidden until unlocked
+document.getElementById('settings-tab').style.display = 'none';
+
+function checkUnlock(screen) {
+  if (settingsUnlocked) return;
+  if (screen === UNLOCK_SEQ[unlockStep]) {
+    unlockStep++;
+    if (unlockStep === UNLOCK_SEQ.length) {
+      settingsUnlocked = true;
+      const tab = document.getElementById('settings-tab');
+      tab.style.display = '';
+      unlockStep = 0;
+    }
+  } else {
+    unlockStep = screen === UNLOCK_SEQ[0] ? 1 : 0;
+  }
+}
+
 document.querySelectorAll('.tab-btn').forEach(btn => {
   btn.addEventListener('click', () => {
+    const screen = btn.dataset.screen;
+
+    // Block settings if locked
+    if (screen === 'settings' && !settingsUnlocked) return;
+
+    checkUnlock(screen);
+
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     btn.classList.add('active');
-    document.getElementById('screen-' + btn.dataset.screen).classList.add('active');
-    if (btn.dataset.screen === 'actuals')  loadActuals();
-    if (btn.dataset.screen === 'settings') renderSettings();
+    document.getElementById('screen-' + screen).classList.add('active');
+
+    if (screen === 'actuals')  loadActuals();
+    if (screen === 'settings') renderSettings();
   });
 });
 
 // ============================================================
 // INIT
 // ============================================================
+updateSourcesTable(); // populate Sources score table on first load
 loadForecast();
 </script>
 </body>
