@@ -611,12 +611,12 @@ body {
 
   <!-- ===== SCREEN 4: SETTINGS ===== -->
   <div id="screen-settings" class="screen">
-    <p class="settings-note">Default values shown. Yellow = pending change. Press Apply to confirm.</p>
+    <p class="settings-note">Adjust points awarded for each condition tier. Yellow = pending change. Press Apply to confirm.</p>
 
     <div class="settings-section">
-      <div class="settings-section-hdr">Rain (Precipitation Chance)</div>
+      <div class="settings-section-hdr">Rain — Points per Tier</div>
       <div class="threshold-row" data-factor="rain" data-idx="0" tabindex="0">
-        <span class="threshold-label"><span class="from" style="color:var(--green)">Green</span> → <span style="color:var(--yellow)">Yellow</span> below</span>
+        <span class="threshold-label"><span style="color:var(--green)">&#9679;</span> 0–10%</span>
         <div class="threshold-ctrl">
           <button class="arrow-btn" data-dir="-1">▼</button>
           <span class="threshold-val" id="tv-rain-0"></span>
@@ -624,7 +624,7 @@ body {
         </div>
       </div>
       <div class="threshold-row" data-factor="rain" data-idx="1" tabindex="0">
-        <span class="threshold-label"><span class="from" style="color:var(--yellow)">Yellow</span> → <span style="color:var(--orange)">Orange</span> below</span>
+        <span class="threshold-label"><span style="color:var(--yellow)">&#9679;</span> 10–25%</span>
         <div class="threshold-ctrl">
           <button class="arrow-btn" data-dir="-1">▼</button>
           <span class="threshold-val" id="tv-rain-1"></span>
@@ -632,19 +632,27 @@ body {
         </div>
       </div>
       <div class="threshold-row" data-factor="rain" data-idx="2" tabindex="0">
-        <span class="threshold-label"><span class="from" style="color:var(--orange)">Orange</span> → <span style="color:var(--red)">Red</span> below</span>
+        <span class="threshold-label"><span style="color:var(--orange)">&#9679;</span> 25–50%</span>
         <div class="threshold-ctrl">
           <button class="arrow-btn" data-dir="-1">▼</button>
           <span class="threshold-val" id="tv-rain-2"></span>
           <button class="arrow-btn" data-dir="1">▲</button>
         </div>
       </div>
+      <div class="threshold-row" data-factor="rain" data-idx="3" tabindex="0">
+        <span class="threshold-label"><span style="color:var(--red)">&#9679;</span> 50–100%</span>
+        <div class="threshold-ctrl">
+          <button class="arrow-btn" data-dir="-1">▼</button>
+          <span class="threshold-val" id="tv-rain-3"></span>
+          <button class="arrow-btn" data-dir="1">▲</button>
+        </div>
+      </div>
     </div>
 
     <div class="settings-section">
-      <div class="settings-section-hdr">Wind Speed</div>
+      <div class="settings-section-hdr">Wind Speed — Points per Tier</div>
       <div class="threshold-row" data-factor="wind" data-idx="0" tabindex="0">
-        <span class="threshold-label"><span class="from" style="color:var(--green)">Green</span> → <span style="color:var(--yellow)">Yellow</span> below</span>
+        <span class="threshold-label"><span style="color:var(--green)">&#9679;</span> 0–5 mph</span>
         <div class="threshold-ctrl">
           <button class="arrow-btn" data-dir="-1">▼</button>
           <span class="threshold-val" id="tv-wind-0"></span>
@@ -652,7 +660,7 @@ body {
         </div>
       </div>
       <div class="threshold-row" data-factor="wind" data-idx="1" tabindex="0">
-        <span class="threshold-label"><span class="from" style="color:var(--yellow)">Yellow</span> → <span style="color:var(--orange)">Orange</span> below</span>
+        <span class="threshold-label"><span style="color:var(--yellow)">&#9679;</span> 5–10 mph</span>
         <div class="threshold-ctrl">
           <button class="arrow-btn" data-dir="-1">▼</button>
           <span class="threshold-val" id="tv-wind-1"></span>
@@ -660,19 +668,27 @@ body {
         </div>
       </div>
       <div class="threshold-row" data-factor="wind" data-idx="2" tabindex="0">
-        <span class="threshold-label"><span class="from" style="color:var(--orange)">Orange</span> → <span style="color:var(--red)">Red</span> below</span>
+        <span class="threshold-label"><span style="color:var(--orange)">&#9679;</span> 10–20 mph</span>
         <div class="threshold-ctrl">
           <button class="arrow-btn" data-dir="-1">▼</button>
           <span class="threshold-val" id="tv-wind-2"></span>
           <button class="arrow-btn" data-dir="1">▲</button>
         </div>
       </div>
+      <div class="threshold-row" data-factor="wind" data-idx="3" tabindex="0">
+        <span class="threshold-label"><span style="color:var(--red)">&#9679;</span> 20+ mph</span>
+        <div class="threshold-ctrl">
+          <button class="arrow-btn" data-dir="-1">▼</button>
+          <span class="threshold-val" id="tv-wind-3"></span>
+          <button class="arrow-btn" data-dir="1">▲</button>
+        </div>
+      </div>
     </div>
 
     <div class="settings-section">
-      <div class="settings-section-hdr">Wave Height</div>
+      <div class="settings-section-hdr">Wave Height — Points per Tier</div>
       <div class="threshold-row" data-factor="wave" data-idx="0" tabindex="0">
-        <span class="threshold-label"><span class="from" style="color:var(--green)">Green</span> → <span style="color:var(--yellow)">Yellow</span> below</span>
+        <span class="threshold-label"><span style="color:var(--green)">&#9679;</span> 0–2 ft</span>
         <div class="threshold-ctrl">
           <button class="arrow-btn" data-dir="-1">▼</button>
           <span class="threshold-val" id="tv-wave-0"></span>
@@ -680,7 +696,7 @@ body {
         </div>
       </div>
       <div class="threshold-row" data-factor="wave" data-idx="1" tabindex="0">
-        <span class="threshold-label"><span class="from" style="color:var(--yellow)">Yellow</span> → <span style="color:var(--orange)">Orange</span> below</span>
+        <span class="threshold-label"><span style="color:var(--yellow)">&#9679;</span> 2–3 ft</span>
         <div class="threshold-ctrl">
           <button class="arrow-btn" data-dir="-1">▼</button>
           <span class="threshold-val" id="tv-wave-1"></span>
@@ -688,10 +704,18 @@ body {
         </div>
       </div>
       <div class="threshold-row" data-factor="wave" data-idx="2" tabindex="0">
-        <span class="threshold-label"><span class="from" style="color:var(--orange)">Orange</span> → <span style="color:var(--red)">Red</span> below</span>
+        <span class="threshold-label"><span style="color:var(--orange)">&#9679;</span> 3–5 ft</span>
         <div class="threshold-ctrl">
           <button class="arrow-btn" data-dir="-1">▼</button>
           <span class="threshold-val" id="tv-wave-2"></span>
+          <button class="arrow-btn" data-dir="1">▲</button>
+        </div>
+      </div>
+      <div class="threshold-row" data-factor="wave" data-idx="3" tabindex="0">
+        <span class="threshold-label"><span style="color:var(--red)">&#9679;</span> 5+ ft</span>
+        <div class="threshold-ctrl">
+          <button class="arrow-btn" data-dir="-1">▼</button>
+          <span class="threshold-val" id="tv-wave-3"></span>
           <button class="arrow-btn" data-dir="1">▲</button>
         </div>
       </div>
@@ -757,61 +781,69 @@ const CALENDAR_DAYS  = 21;
 const WINDY_KEY      = 'WFodLkRZJDFfVcqtF8VNVDo4H944y89g';
 
 // ============================================================
-// THRESHOLDS (user-configurable, persisted in localStorage)
+// POINTS (user-configurable, persisted in localStorage)
+// Breakpoints are fixed; only the point values change.
+// rain:  0-10% | 10-25% | 25-50% | 50%+
+// wind:  0-5   | 5-10   | 10-20  | 20+   mph
+// wave:  0-2   | 2-3    | 3-5    | 5+    ft
 // ============================================================
-const DEFAULT_THRESHOLDS = {
-  rain: [10, 25, 50],   // % breakpoints
-  wind: [5, 10, 20],    // mph breakpoints
-  wave: [2, 3, 5]       // ft breakpoints
+const DEFAULT_POINTS = {
+  rain: [5, 4, 3, 1],
+  wind: [5, 4, 3, 1],
+  wave: [6, 5, 3, 1]
 };
 
-function loadThresholds() {
+function loadPoints() {
   try {
-    const s = localStorage.getItem('kevfish_thresholds');
-    return s ? JSON.parse(s) : JSON.parse(JSON.stringify(DEFAULT_THRESHOLDS));
-  } catch { return JSON.parse(JSON.stringify(DEFAULT_THRESHOLDS)); }
+    const s = localStorage.getItem('kevfish_points');
+    return s ? JSON.parse(s) : JSON.parse(JSON.stringify(DEFAULT_POINTS));
+  } catch { return JSON.parse(JSON.stringify(DEFAULT_POINTS)); }
 }
 
-let thresholds = loadThresholds();
-let pendingThresholds = JSON.parse(JSON.stringify(thresholds));
+let points = loadPoints();
+let pendingPoints = JSON.parse(JSON.stringify(points));
 
 // ============================================================
 // SCORING
 // ============================================================
 function scoreRain(p) {
-  if (p < thresholds.rain[0]) return 5;
-  if (p < thresholds.rain[1]) return 4;
-  if (p < thresholds.rain[2]) return 3;
-  return 1;
+  if (p < 10)  return points.rain[0];
+  if (p < 25)  return points.rain[1];
+  if (p < 50)  return points.rain[2];
+  return points.rain[3];
 }
 function scoreWind(v) {
-  if (v < thresholds.wind[0]) return 5;
-  if (v < thresholds.wind[1]) return 4;
-  if (v < thresholds.wind[2]) return 3;
-  return 1;
+  if (v <  5)  return points.wind[0];
+  if (v < 10)  return points.wind[1];
+  if (v < 20)  return points.wind[2];
+  return points.wind[3];
 }
 function scoreWave(ft) {
   if (ft == null) return null;
-  if (ft < thresholds.wave[0]) return 6;
-  if (ft < thresholds.wave[1]) return 5;
-  if (ft < thresholds.wave[2]) return 3;
-  return 1;
+  if (ft < 2)  return points.wave[0];
+  if (ft < 3)  return points.wave[1];
+  if (ft < 5)  return points.wave[2];
+  return points.wave[3];
 }
 
 function computeScore(rain, wind, wave) {
-  const wp = scoreWave(wave);
-  if (wp == null) return { pts: scoreRain(rain) + scoreWind(wind), max: 10, waveNA: true };
-  return { pts: scoreRain(rain) + scoreWind(wind) + wp, max: 16, waveNA: false };
+  const wp     = scoreWave(wave);
+  const maxFull = points.rain[0] + points.wind[0] + points.wave[0];
+  const max2fac = points.rain[0] + points.wind[0];
+  if (wp == null) return { pts: scoreRain(rain) + scoreWind(wind), max: max2fac, waveNA: true };
+  return { pts: scoreRain(rain) + scoreWind(wind) + wp, max: maxFull, waveNA: false };
 }
 
+// Color thresholds auto-scale with max score (87.5% / 62.5% / 43.75%)
 function colorOf(pts, max) {
-  if (max === 16) return pts >= 14 ? 'green' : pts >= 10 ? 'yellow' : pts >= 7 ? 'orange' : 'red';
-  return pts >= 9 ? 'green' : pts >= 7 ? 'yellow' : pts >= 4 ? 'orange' : 'red';
+  if (max === 0) return 'grey';
+  const pct = pts / max;
+  return pct >= 0.875 ? 'green' : pct >= 0.625 ? 'yellow' : pct >= 0.4375 ? 'orange' : 'red';
 }
 function labelOf(c)   { return {green:'Very Good',yellow:'Good',orange:'Fair',red:'Poor'}[c]; }
-function cRain(v)  { const t=thresholds.rain; return v<t[0]?'green':v<t[1]?'yellow':v<t[2]?'orange':'red'; }
-function cWind(v)  { const t=thresholds.wind; return v<t[0]?'green':v<t[1]?'yellow':v<t[2]?'orange':'red'; }
-function cWave(ft) { if(ft==null)return'grey'; const t=thresholds.wave; return ft<t[0]?'green':ft<t[1]?'yellow':ft<t[2]?'orange':'red'; }
+function cRain(v)  { return v < 10 ? 'green' : v < 25 ? 'yellow' : v < 50 ? 'orange' : 'red'; }
+function cWind(v)  { return v <  5 ? 'green' : v < 10 ? 'yellow' : v < 20 ? 'orange' : 'red'; }
+function cWave(ft) { if (ft==null) return 'grey'; return ft < 2 ? 'green' : ft < 3 ? 'yellow' : ft < 5 ? 'orange' : 'red'; }
 
 function degToCompass(deg) {
   const dirs = ['N','NE','E','SE','S','SW','W','NW'];
@@ -1228,42 +1260,37 @@ async function loadActuals() {
 // ============================================================
 // SETTINGS SCREEN
 // ============================================================
-const UNITS = { rain: '%', wind: ' mph', wave: ' ft' };
-const STEPS = { rain: 1,   wind: 1,      wave: 0.5  };
-const MINS  = { rain: 1,   wind: 1,      wave: 0.5  };
-const MAXS  = { rain: 99,  wind: 60,     wave: 20   };
+const TIER_LABELS = {
+  rain: ['0–10%', '10–25%', '25–50%', '50–100%'],
+  wind: ['0–5 mph', '5–10 mph', '10–20 mph', '20+ mph'],
+  wave: ['0–2 ft', '2–3 ft', '3–5 ft', '5+ ft']
+};
 
 function renderSettings() {
   ['rain','wind','wave'].forEach(factor => {
-    pendingThresholds[factor].forEach((val, idx) => {
+    pendingPoints[factor].forEach((val, idx) => {
       const el = document.getElementById(`tv-${factor}-${idx}`);
       if (!el) return;
-      el.textContent = val + UNITS[factor];
-      el.classList.toggle('changed', val !== thresholds[factor][idx]);
+      el.textContent = val + ' pts';
+      el.classList.toggle('changed', val !== points[factor][idx]);
     });
   });
 }
 
-function adjustThreshold(factor, idx, dir) {
-  const arr  = pendingThresholds[factor];
-  const step = STEPS[factor];
-  let newVal = Math.round((arr[idx] + dir * step) * 10) / 10;
-  // Clamp to min/max and maintain ordering with gap of 1 step
-  const lo = idx === 0 ? MINS[factor] : arr[idx - 1] + step;
-  const hi = idx === arr.length - 1 ? MAXS[factor] : arr[idx + 1] - step;
-  newVal = Math.min(Math.max(newVal, lo), hi);
-  pendingThresholds[factor][idx] = newVal;
+function adjustPoint(factor, idx, dir) {
+  let newVal = pendingPoints[factor][idx] + dir;
+  newVal = Math.min(Math.max(newVal, 0), 10);
+  pendingPoints[factor][idx] = newVal;
   renderSettings();
 }
 
 function buildChangesSummary() {
   const lines = [];
   const labels = { rain: 'Rain', wind: 'Wind', wave: 'Wave' };
-  const tiers  = ['Green→Yellow', 'Yellow→Orange', 'Orange→Red'];
   ['rain','wind','wave'].forEach(factor => {
-    pendingThresholds[factor].forEach((val, idx) => {
-      if (val !== thresholds[factor][idx]) {
-        lines.push(`<span class="change-line">${labels[factor]} ${tiers[idx]}: ${thresholds[factor][idx]}${UNITS[factor]} → ${val}${UNITS[factor]}</span>`);
+    pendingPoints[factor].forEach((val, idx) => {
+      if (val !== points[factor][idx]) {
+        lines.push(`<span class="change-line">${labels[factor]} ${TIER_LABELS[factor][idx]}: ${points[factor][idx]} pts → ${val} pts</span>`);
       }
     });
   });
@@ -1278,11 +1305,11 @@ document.getElementById('btn-apply').addEventListener('click', () => {
 });
 
 document.getElementById('modal-yes').addEventListener('click', () => {
-  thresholds = JSON.parse(JSON.stringify(pendingThresholds));
-  localStorage.setItem('kevfish_thresholds', JSON.stringify(thresholds));
+  points = JSON.parse(JSON.stringify(pendingPoints));
+  localStorage.setItem('kevfish_points', JSON.stringify(points));
   document.getElementById('confirm-modal').style.display = 'none';
   renderSettings();
-  if (cachedForecast) renderCalendar(cachedForecast); // re-render forecast with new thresholds
+  if (cachedForecast) renderCalendar(cachedForecast);
 });
 
 document.getElementById('modal-no').addEventListener('click', () => {
@@ -1290,21 +1317,20 @@ document.getElementById('modal-no').addEventListener('click', () => {
 });
 
 document.getElementById('btn-reset').addEventListener('click', () => {
-  pendingThresholds = JSON.parse(JSON.stringify(DEFAULT_THRESHOLDS));
+  pendingPoints = JSON.parse(JSON.stringify(DEFAULT_POINTS));
   renderSettings();
 });
 
-// Arrow button clicks
+// Arrow button clicks + keyboard support
 document.querySelectorAll('.threshold-row').forEach(row => {
   const factor = row.dataset.factor;
   const idx    = parseInt(row.dataset.idx);
   row.querySelectorAll('.arrow-btn').forEach(btn => {
-    btn.addEventListener('click', () => adjustThreshold(factor, idx, parseInt(btn.dataset.dir)));
+    btn.addEventListener('click', () => adjustPoint(factor, idx, parseInt(btn.dataset.dir)));
   });
-  // Keyboard arrow key support when row is focused
   row.addEventListener('keydown', e => {
-    if (e.key === 'ArrowUp')   { e.preventDefault(); adjustThreshold(factor, idx,  1); }
-    if (e.key === 'ArrowDown') { e.preventDefault(); adjustThreshold(factor, idx, -1); }
+    if (e.key === 'ArrowUp')   { e.preventDefault(); adjustPoint(factor, idx,  1); }
+    if (e.key === 'ArrowDown') { e.preventDefault(); adjustPoint(factor, idx, -1); }
   });
 });
 
