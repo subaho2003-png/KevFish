@@ -71,6 +71,29 @@ body {
   border-bottom: 1px solid #b71c1c;
 }
 
+/* ---- Buoy Strip ---- */
+#buoy-strip {
+  background: #0d1f35;
+  color: var(--muted);
+  padding: 5px 14px;
+  font-size: 0.7rem;
+  display: none;
+  flex-shrink: 0;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+#buoy-strip .buoy-label {
+  color: var(--accent);
+  font-weight: 700;
+  font-size: 0.68rem;
+  letter-spacing: 0.3px;
+}
+#buoy-strip .buoy-val { color: var(--text); font-weight: 600; }
+#buoy-strip .buoy-ts  { color: var(--dim); margin-left: auto; font-size: 0.63rem; }
+
 /* ---- Tab Nav ---- */
 #tabs {
   display: flex;
@@ -394,7 +417,8 @@ tr:nth-child(odd) .act-td { background: rgba(255,255,255,0.02); }
   margin-top: 1px;
 }
 .act-lbl { font-size: 0.57rem; font-weight: 700; color: var(--accent); min-width: 9px; }
-.act-pts { font-size: 0.6rem; color: var(--dim); }
+.act-pts  { font-size: 0.6rem; color: var(--dim); }
+.act-buoy { font-size: 0.57rem; color: var(--accent); font-weight: 600; }
 
 /* ---- Settings Screen ---- */
 .settings-section {
@@ -551,6 +575,12 @@ tr:nth-child(odd) .act-td { background: rgba(255,255,255,0.02); }
 </div>
 
 <div id="alert-banner"></div>
+<div id="buoy-strip" style="display:none">
+  <span class="buoy-label">BUOY 41114</span>
+  <span>Waves: <span class="buoy-val" id="buoy-wave">—</span></span>
+  <span>Wind: <span class="buoy-val" id="buoy-wind">—</span></span>
+  <span class="buoy-ts" id="buoy-time"></span>
+</div>
 
 <nav id="tabs">
   <button class="tab-btn active" data-screen="forecast">Forecast</button>
@@ -643,7 +673,7 @@ tr:nth-child(odd) .act-td { background: rgba(255,255,255,0.02); }
     </div>
     <div class="source-card">
       <h3>NOAA NDBC Buoy 41114</h3>
-      <p>Real-time buoy near Fort Pierce (27.551&deg;N, 80.225&deg;W). Provides ground truth wave height and conditions. Planned for future wave actuals integration.</p>
+      <p>Fort Pierce Nearshore buoy (27.551&deg;N, 80.225&deg;W). Provides real wave height and wind readings at the inlet. Used as current conditions display and as ground-truth wave actuals in the Actuals screen. Data via NOAA CoastWatch ERDDAP.</p>
     </div>
 
     <div class="section-hdr">Location</div>
@@ -1178,6 +1208,49 @@ async function saveForecast(dates, rainArr, windArr, windDirArr, waveMap, windyW
 }
 
 let actualsAllDocs = [];
+let cachedBuoyObs  = null; // shared between forecast and actuals screens
+
+async function apiNDBCBuoy() {
+  if (cachedBuoyObs) return cachedBuoyObs;
+  try {
+    const start = shiftDate(todayStr(), -9); // 9 days back covers actuals + current
+    const url =
+      `https://coastwatch.pfeg.noaa.gov/erddap/tabledap/cwwcNDBCMet.json` +
+      `?station%2Ctime%2Cwd%2Cwspd%2Cwvht` +
+      `&station=%2241114%22` +
+      `&time%3E=${encodeURIComponent(start + 'T00:00:00Z')}` +
+      `&orderBy(%22time%22)`;
+    const data = await getJSON(url);
+    const rows = data?.table?.rows;
+    if (!rows?.length) return null;
+    const obs = rows
+      .filter(r => r[4] != null) // must have wave height
+      .map(r => {
+        const [, timeISO, wdir, wspd, wvht] = r;
+        const dt = new Date(timeISO);
+        return {
+          date:     dt.toLocaleDateString('en-CA', { timeZone: TZ }),
+          localHr:  parseInt(dt.toLocaleTimeString('en-US', { timeZone: TZ, hour: 'numeric', hour12: false })),
+          localMin: dt.getUTCMinutes(),
+          timeISO,
+          wvht_ft:  +(wvht  * 3.28084).toFixed(2),
+          wspd_mph: wspd != null ? +(wspd * 2.23694).toFixed(1) : null,
+          wdir_deg: wdir != null ? Math.round(wdir)              : null
+        };
+      });
+    cachedBuoyObs = obs;
+    return obs;
+  } catch (e) { console.warn('NDBC buoy fetch failed:', e.message); return null; }
+}
+
+function getBuoyForDate(obs, date, targetHr = 10) {
+  if (!obs) return null;
+  const dayObs = obs.filter(o => o.date === date);
+  if (!dayObs.length) return null;
+  return dayObs.reduce((best, o) =>
+    Math.abs(o.localHr - targetHr) < Math.abs(best.localHr - targetHr) ? o : best
+  );
+}
 
 async function loadForecastsForDates(targetDates) {
   if (!firestoreReady) return {};
@@ -1335,9 +1408,25 @@ function renderCalendar(data) {
 
 async function loadForecast() {
   try {
-    const [fcast, marine, alerts, windyWaves, calibData] = await Promise.all([
-      apiForecast(), apiMarine(), apiAlerts(), apiWindyWaves(WINDY_KEY), apiCalibration()
+    const [fcast, marine, alerts, windyWaves, calibData, buoyObs] = await Promise.all([
+      apiForecast(), apiMarine(), apiAlerts(), apiWindyWaves(WINDY_KEY), apiCalibration(),
+      apiNDBCBuoy()
     ]);
+
+    // Update buoy strip with most recent observation
+    if (buoyObs?.length) {
+      const latest = buoyObs[buoyObs.length - 1];
+      document.getElementById('buoy-wave').textContent =
+        latest.wvht_ft != null ? latest.wvht_ft + ' ft' : '—';
+      document.getElementById('buoy-wind').textContent =
+        latest.wspd_mph != null
+          ? latest.wspd_mph + ' mph' + (latest.wdir_deg != null ? ' ' + degToCompass(latest.wdir_deg) : '')
+          : '—';
+      const obsTime = new Date(latest.timeISO)
+        .toLocaleTimeString('en-US', { timeZone: TZ, hour: 'numeric', minute: '2-digit' });
+      document.getElementById('buoy-time').textContent = 'as of ' + obsTime;
+      document.getElementById('buoy-strip').style.display = 'flex';
+    }
 
     // NWS alert banner
     if (alerts?.features?.length) {
@@ -1429,7 +1518,9 @@ function buildActualsRowHTML(date, fcst, actl) {
   const aWindStr = actl?.wind    != null
     ? actl.wind + ' mph' + (actl.windDir != null ? ' ' + degToCompass(actl.windDir) : '')
     : '—';
-  const aWaveStr = actl?.wave    != null ? actl.wave.toFixed(1) + ' ft'   : '—';
+  const aWaveStr = actl?.wave != null
+    ? actl.wave.toFixed(1) + ' ft' + (actl.waveSource === 'buoy' ? ' <span class="act-buoy">buoy</span>' : '')
+    : '—';
 
   const pts  = n  => n  != null ? `<span class="act-pts">${n}pt</span>` : '';
   const fon  = fcst?.forecastedOn ? `<div class="act-fon">fcst ${fcst.forecastedOn.slice(5)}</div>` : '';
@@ -1470,9 +1561,15 @@ async function refreshActualsRow(tr, newDate) {
       loadForecastsForDates([newDate]),
       newDate <= era5Cutoff ? apiActualsHourly(newDate, newDate) : Promise.resolve({})
     ]);
+    const actEntry = actls[newDate] ?? null;
+    // Overlay buoy wave reading if available
+    if (actEntry) {
+      const buoy = getBuoyForDate(cachedBuoyObs, newDate, 10);
+      if (buoy?.wvht_ft != null) { actEntry.wave = buoy.wvht_ft; actEntry.waveSource = 'buoy'; }
+    }
     actualsRowCache[newDate] = {
-      forecast: fcsts[newDate]  ?? null,
-      actual:   actls[newDate]  ?? null
+      forecast: fcsts[newDate] ?? null,
+      actual:   actEntry
     };
   }
   const { forecast, actual } = actualsRowCache[newDate];
@@ -1503,10 +1600,20 @@ async function loadActuals() {
     const dates = [];
     for (let d = era5Start; d <= era5End; d = shiftDate(d, 1)) dates.push(d);
 
-    const [fcsts, actls] = await Promise.all([
+    const [fcsts, actls, buoyObs] = await Promise.all([
       loadForecastsForDates(dates),
-      apiActualsHourly(era5Start, era5End)
+      apiActualsHourly(era5Start, era5End),
+      apiNDBCBuoy()
     ]);
+
+    // Overlay buoy wave readings on model actuals where available
+    dates.forEach(dt => {
+      const buoy = getBuoyForDate(buoyObs, dt, 10);
+      if (buoy?.wvht_ft != null && actls[dt]) {
+        actls[dt].wave       = buoy.wvht_ft;
+        actls[dt].waveSource = 'buoy';
+      }
+    });
 
     // Cache all loaded data
     dates.forEach(dt => {
@@ -1526,10 +1633,13 @@ async function loadActuals() {
       bindRowDateInput(tr);
     });
 
-    const hasFcst = dates.some(dt => actualsRowCache[dt].forecast != null);
-    document.getElementById('actuals-note').textContent = hasFcst
-      ? 'F = most recent prior forecast. A = actual at 10 AM. Tap any date to look up a different day.'
-      : 'Forecast data builds as you use the app — F columns populate over time. A = actual at 10 AM.';
+    const hasFcst  = dates.some(dt => actualsRowCache[dt].forecast != null);
+    const hasBuoy  = dates.some(dt => actualsRowCache[dt].actual?.waveSource === 'buoy');
+    document.getElementById('actuals-note').textContent =
+      (hasFcst ? 'F = prior forecast. ' : 'F columns populate as you use the app. ') +
+      'A = actual at 10 AM' +
+      (hasBuoy ? ' (wave = Buoy 41114). ' : '. ') +
+      'Tap any date to look up a different day.';
 
     document.getElementById('actuals-loading').style.display = 'none';
     document.getElementById('actuals-content').style.display = 'block';
