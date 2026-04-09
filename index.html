@@ -810,6 +810,9 @@ try {
 // ============================================================
 const LAT            = 27.4467;
 const LON            = -80.3256;
+// Slightly offshore for marine wave APIs — inlet coords fall on a coastal land cell
+const MARINE_LAT     = 27.45;
+const MARINE_LON     = -79.90;
 const TZ             = 'America/New_York';
 const FORECAST_DAYS  = 16;
 const CALENDAR_DAYS  = 21;
@@ -997,7 +1000,7 @@ async function apiMarine() {
   try {
     return await getJSON(
       `https://marine-api.open-meteo.com/v1/marine` +
-      `?latitude=${LAT}&longitude=${LON}` +
+      `?latitude=${MARINE_LAT}&longitude=${MARINE_LON}` +
       `&daily=wave_height_max` +
       `&timezone=${encodeURIComponent(TZ)}&forecast_days=8`
     );
@@ -1019,7 +1022,7 @@ async function apiWindyWaves(key) {
     const resp = await fetch('https://api.windy.com/api/point-forecast/v2', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ lat: LAT, lon: LON, model: 'gfs', parameters: ['waves'], key })
+      body: JSON.stringify({ lat: MARINE_LAT, lon: MARINE_LON, model: 'gfs', parameters: ['waves'], key })
     });
     if (!resp.ok) return null;
     const data = await resp.json();
@@ -1058,7 +1061,7 @@ async function apiCalibration() {
     const [waveHist, windHist] = await Promise.all([
       getJSON(
         `https://marine-api.open-meteo.com/v1/marine` +
-        `?latitude=${LAT}&longitude=${LON}&daily=wave_height_max` +
+        `?latitude=${MARINE_LAT}&longitude=${MARINE_LON}&daily=wave_height_max` +
         `&timezone=${encodeURIComponent(TZ)}&start_date=${start}&end_date=${end}`
       ),
       getJSON(
