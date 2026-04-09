@@ -330,64 +330,12 @@ body {
   line-height: 1.5;
 }
 
-/* ---- Actuals Table ---- */
-.act-scroll-wrap {
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-  margin: 0 -12px;
-}
-.act-table {
-  width: 100%;
-  min-width: 500px;
-  border-collapse: collapse;
-}
-.act-table thead th {
-  background: #0d1f35;
-  color: var(--accent);
-  font-size: 0.64rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  padding: 7px 6px;
-  border-bottom: 2px solid var(--border);
-  text-align: center;
-  white-space: nowrap;
-}
-.act-table thead th small {
-  display: block;
-  color: var(--dim);
-  font-size: 0.59rem;
-  font-weight: 400;
-  text-transform: none;
-  letter-spacing: 0;
-  margin-top: 1px;
-}
-.act-td {
-  padding: 8px 5px;
-  border-bottom: 1px solid var(--border);
-  vertical-align: top;
-}
-tr:last-child .act-td { border-bottom: none; }
-tr:nth-child(odd) .act-td { background: rgba(255,255,255,0.02); }
-.act-td-date { min-width: 82px; text-align: center; }
-.act-date-inp {
-  background: transparent;
-  border: 1px solid var(--border);
-  color: var(--text);
-  font-size: 0.62rem;
-  padding: 2px 3px;
-  border-radius: 4px;
-  width: 86px;
-  margin-bottom: 2px;
-}
-.act-dow { font-size: 0.62rem; color: var(--muted); margin-top: 2px; }
-.act-td-score { text-align: center; min-width: 72px; }
-.act-score-row { margin-bottom: 2px; }
+/* ---- Actuals Comparison Cards ---- */
 .badge-sm {
   display: inline-block;
-  padding: 2px 6px;
+  padding: 2px 7px;
   border-radius: 4px;
-  font-size: 0.68rem;
+  font-size: 0.7rem;
   font-weight: 700;
 }
 .badge-sm.green  { background: var(--green);  color: #000; }
@@ -395,30 +343,82 @@ tr:nth-child(odd) .act-td { background: rgba(255,255,255,0.02); }
 .badge-sm.orange { background: var(--orange); color: #000; }
 .badge-sm.red    { background: var(--red);    color: #fff; }
 .badge-sm.grey   { background: #445;          color: #aaa; }
-.act-fon { font-size: 0.57rem; color: var(--dim); margin-bottom: 2px; }
-.act-delta { font-size: 0.75rem; font-weight: 700; color: var(--muted); margin-top: 2px; }
-.act-delta.pos { color: #58a6ff; }
-.act-delta.neg { color: #f9826c; }
-.act-label-sm { font-size: 0.56rem; color: var(--dim); line-height: 1.3; margin-top: 2px; }
-.act-td-factor { min-width: 88px; }
-.act-frow {
+.cmp-card {
+  background: var(--card);
+  border-radius: 10px;
+  margin-bottom: 14px;
+  overflow: hidden;
+}
+.cmp-card-hdr {
   display: flex;
-  align-items: baseline;
-  gap: 3px;
-  padding: 2px 0;
-  font-size: 0.68rem;
+  align-items: center;
+  justify-content: space-between;
+  padding: 7px 10px;
+  background: #0d1f35;
+  border-bottom: 1px solid var(--border);
+}
+.cmp-hdr-grp {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.cmp-hdr-lbl {
+  font-size: 0.58rem;
+  color: var(--dim);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  margin-bottom: 2px;
+}
+.cmp-hdr-date { font-size: 0.72rem; color: var(--accent); font-weight: 700; }
+.cmp-date-inp {
+  background: transparent;
+  border: 1px solid var(--border);
   color: var(--text);
-  flex-wrap: wrap;
+  font-size: 0.67rem;
+  padding: 3px 5px;
+  border-radius: 5px;
+  width: 106px;
 }
-.act-frow.actl {
+/* column-header strip */
+.cmp-col-hdrs {
+  display: grid;
+  grid-template-columns: 42px 1fr 1fr 70px;
+  padding: 4px 8px;
+  background: rgba(0,0,0,0.18);
+  gap: 4px;
+}
+.cmp-ch {
+  font-size: 0.59rem;
+  font-weight: 700;
+  color: var(--accent);
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+/* data rows */
+.cmp-row {
+  display: grid;
+  grid-template-columns: 42px 1fr 1fr 70px;
+  padding: 6px 8px;
+  border-top: 1px solid var(--border);
+  align-items: center;
+  gap: 4px;
+}
+.cmp-row-lbl {
+  font-size: 0.65rem;
   color: var(--muted);
-  border-top: 1px solid rgba(255,255,255,0.06);
-  padding-top: 3px;
-  margin-top: 1px;
+  font-weight: 600;
 }
-.act-lbl { font-size: 0.57rem; font-weight: 700; color: var(--accent); min-width: 9px; }
-.act-pts  { font-size: 0.6rem; color: var(--dim); }
-.act-buoy { font-size: 0.57rem; color: var(--accent); font-weight: 600; }
+.cmp-cell { text-align: center; line-height: 1.4; }
+.cmp-val  { font-size: 0.7rem;  color: var(--text);  font-weight: 600; display: block; }
+.cmp-pts  { font-size: 0.62rem; color: var(--dim);   display: block; }
+.cmp-sep  { color: var(--dim);  font-size: 0.6rem; }
+.cmp-diff { font-size: 0.68rem; font-weight: 700; display: block; }
+.cmp-diff.pos  { color: #58a6ff; }
+.cmp-diff.neg  { color: #f9826c; }
+.cmp-diff.zero { color: var(--muted); }
+.cmp-na   { color: var(--dim); font-size: 0.62rem; }
+.cmp-buoy { font-size: 0.56rem; color: var(--accent); font-weight: 600; margin-left: 2px; }
 
 /* ---- Settings Screen ---- */
 .settings-section {
@@ -695,21 +695,8 @@ tr:nth-child(odd) .act-td { background: rgba(255,255,255,0.02); }
       <span>Loading actuals&hellip;</span>
     </div>
     <div id="actuals-content" style="display:none">
-      <div class="act-scroll-wrap">
-        <table class="act-table">
-          <thead>
-            <tr>
-              <th><small>tap to change</small>Date</th>
-              <th>Score<small>F / A / &Delta;</small></th>
-              <th>Rain<small>F / A</small></th>
-              <th>Wind<small>F / A</small></th>
-              <th>Waves<small>F / A</small></th>
-            </tr>
-          </thead>
-          <tbody id="actuals-tbody"></tbody>
-        </table>
-      </div>
-      <p class="footnote" id="actuals-note" style="margin-top:8px"></p>
+      <div id="actuals-list"></div>
+      <p class="footnote" id="actuals-note" style="margin-top:4px"></p>
     </div>
     <div id="actuals-err" class="loading-state" style="display:none">
       <span>Failed to load historical data. Check your connection.</span>
@@ -917,8 +904,8 @@ try {
 const LAT            = 27.4467;
 const LON            = -80.3256;
 // Slightly offshore for marine wave APIs — inlet coords fall on a coastal land cell
-const MARINE_LAT     = 27.45;
-const MARINE_LON     = -79.90;
+const MARINE_LAT     = 27.47;   // ~13 miles offshore from Fort Pierce Inlet
+const MARINE_LON     = -80.12;
 const TZ             = 'America/New_York';
 const FORECAST_DAYS  = 16;
 const CALENDAR_DAYS  = 21;
@@ -1484,18 +1471,18 @@ function scoreActualRain(precipIn) {
   return points.rain[3];                        // heavy
 }
 
-function buildActualsRowHTML(date, fcst, actl) {
+function buildComparisonCard(date, fcst, actl) {
   const { dow, mday } = fmtDate(date);
 
-  // Forecast points
-  const fRainPts = fcst?.rain    != null ? scoreRain(fcst.rain)           : null;
-  const fWindPts = fcst?.wind    != null ? scoreWind(fcst.wind)           : null;
-  const fWavePts = fcst?.wave    != null ? scoreWave(fcst.wave)           : null;
+  // Forecast scores
+  const fRainPts = fcst?.rain != null ? scoreRain(fcst.rain) : null;
+  const fWindPts = fcst?.wind != null ? scoreWind(fcst.wind) : null;
+  const fWavePts = fcst?.wave != null ? scoreWave(fcst.wave) : null;
   const fTotal   = (fRainPts ?? 0) + (fWindPts ?? 0) + (fWavePts ?? 0);
   const fMax     = fWavePts != null ? currentMax() : points.rain[0] + points.wind[0];
   const fColor   = fcst ? colorOf(fTotal, fMax) : 'grey';
 
-  // Actual points
+  // Actual scores
   const aRainPts = actl?.precipIn != null ? scoreActualRain(actl.precipIn) : null;
   const aWindPts = actl?.wind     != null ? scoreWind(actl.wind)           : null;
   const aWavePts = actl?.wave     != null ? scoreWave(actl.wave)           : null;
@@ -1503,58 +1490,113 @@ function buildActualsRowHTML(date, fcst, actl) {
   const aMax     = aWavePts != null ? currentMax() : points.rain[0] + points.wind[0];
   const aColor   = actl ? colorOf(aTotal, aMax) : 'grey';
 
-  // Delta (forecast minus actual — positive = forecast was optimistic)
-  const delta    = fcst && actl ? fTotal - aTotal : null;
-  const deltaStr = delta == null ? '—' : (delta > 0 ? '+' + delta : String(delta));
-  const deltaCls = delta == null ? '' : delta > 0 ? ' pos' : delta < 0 ? ' neg' : '';
+  // Score delta
+  const dScore  = fcst && actl ? fTotal - aTotal : null;
+  const dScoreS = dScore == null ? '—' : (dScore > 0 ? '+' + dScore : String(dScore));
+  const dCls    = dScore == null ? 'zero' : dScore > 0 ? 'neg' : dScore < 0 ? 'pos' : 'zero';
 
-  // Display strings
-  const fRainStr = fcst?.rain    != null ? Math.round(fcst.rain) + '%'    : '—';
-  const fWindStr = fcst?.wind    != null
-    ? Math.round(fcst.wind) + ' mph' + (fcst.windDir != null ? ' ' + degToCompass(fcst.windDir) : '')
-    : '—';
-  const fWaveStr = fcst?.wave    != null ? fcst.wave.toFixed(1) + ' ft'   : '—';
-  const aRainStr = actl?.precipIn != null ? actl.precipIn.toFixed(2) + '"' : '—';
-  const aWindStr = actl?.wind    != null
-    ? actl.wind + ' mph' + (actl.windDir != null ? ' ' + degToCompass(actl.windDir) : '')
-    : '—';
-  const aWaveStr = actl?.wave != null
-    ? actl.wave.toFixed(1) + ' ft' + (actl.waveSource === 'buoy' ? ' <span class="act-buoy">buoy</span>' : '')
+  // Formatted raw values
+  const fRainV = fcst?.rain != null ? Math.round(fcst.rain) + '%'  : '—';
+  const fWindV = fcst?.wind != null
+    ? Math.round(fcst.wind) + ' mph' + (fcst.windDir != null ? ' ' + degToCompass(fcst.windDir) : '') : '—';
+  const fWaveV = fcst?.wave != null ? fcst.wave.toFixed(1) + ' ft' : '—';
+
+  const aRainV = actl?.precipIn != null ? actl.precipIn.toFixed(2) + '"' : '—';
+  const aWindV = actl?.wind     != null
+    ? actl.wind + ' mph' + (actl.windDir != null ? ' ' + degToCompass(actl.windDir) : '') : '—';
+  const buoyTag = (src) => src === 'buoy' ? ' <span class="cmp-buoy">buoy</span>' : '';
+  const aWaveV = actl?.wave != null
+    ? actl.wave.toFixed(1) + ' ft' + buoyTag(actl.waveSource) : '—';
+  const aWindVFull = actl?.wind != null
+    ? actl.wind + ' mph' + (actl.windDir != null ? ' ' + degToCompass(actl.windDir) : '') + buoyTag(actl.windSource)
     : '—';
 
-  const pts  = n  => n  != null ? `<span class="act-pts">${n}pt</span>` : '';
-  const fon  = fcst?.forecastedOn ? `<div class="act-fon">fcst ${fcst.forecastedOn.slice(5)}</div>` : '';
+  // Difference values
+  const dWind = (fcst?.wind != null && actl?.wind != null)
+    ? (fcst.wind - actl.wind) : null;
+  const dWave = (fcst?.wave != null && actl?.wave != null)
+    ? (fcst.wave - actl.wave) : null;
+  const dWindPts = (fWindPts != null && aWindPts != null) ? fWindPts - aWindPts : null;
+  const dWavePts = (fWavePts != null && aWavePts != null) ? fWavePts - aWavePts : null;
+  const dRainPts = (fRainPts != null && aRainPts != null) ? fRainPts - aRainPts : null;
 
-  return `
-    <td class="act-td act-td-date">
-      <input type="date" class="act-date-inp" value="${date}">
-      <div class="act-dow">${dow} ${mday}</div>
-    </td>
-    <td class="act-td act-td-score">
-      <div class="act-score-row"><span class="badge-sm ${fColor}">${fcst ? fTotal + '/' + fMax : '—'}</span></div>
-      ${fon}
-      <div class="act-score-row"><span class="badge-sm ${aColor}">${actl ? aTotal + '/' + aMax : '—'}</span></div>
-      <div class="act-delta${deltaCls}">${deltaStr}</div>
-      ${actl ? `<div class="act-label-sm">${labelOf(aColor)}</div>` : ''}
-    </td>
-    <td class="act-td act-td-factor">
-      <div class="act-frow"><span class="act-lbl">F</span>${fRainStr} ${pts(fRainPts)}</div>
-      <div class="act-frow actl"><span class="act-lbl">A</span>${aRainStr} ${pts(aRainPts)}</div>
-    </td>
-    <td class="act-td act-td-factor">
-      <div class="act-frow"><span class="act-lbl">F</span>${fWindStr} ${pts(fWindPts)}</div>
-      <div class="act-frow actl"><span class="act-lbl">A</span>${aWindStr} ${pts(aWindPts)}</div>
-    </td>
-    <td class="act-td act-td-factor">
-      <div class="act-frow"><span class="act-lbl">F</span>${fWaveStr} ${pts(fWavePts)}</div>
-      <div class="act-frow actl"><span class="act-lbl">A</span>${aWaveStr} ${pts(aWavePts)}</div>
-    </td>`;
+  const fmt = (n, unit) => n == null ? '—'
+    : (n > 0 ? '+' : '') + (unit === 'ft' ? n.toFixed(1) : Math.round(n)) + ' ' + unit;
+  const fmtPts = n => n == null ? '—' : (n > 0 ? '+' : '') + n + ' pts';
+  const diffCls = n => n == null ? 'zero' : n > 0 ? 'neg' : n < 0 ? 'pos' : 'zero';
+
+  const cell = (val, pts) => `
+    <div class="cmp-cell">
+      <span class="cmp-val">${val}</span>
+      <span class="cmp-pts">${pts != null ? pts + ' pts' : '—'}</span>
+    </div>`;
+
+  const diffCell = (rawStr, ptsStr, cls) => `
+    <div class="cmp-cell">
+      <span class="cmp-diff ${cls}">${rawStr}</span>
+      <span class="cmp-pts">${ptsStr}</span>
+    </div>`;
+
+  const forecastedOn = fcst?.forecastedOn
+    ? `<div class="cmp-hdr-lbl" style="margin-top:2px">fcst made ${fcst.forecastedOn.slice(5)}</div>` : '';
+
+  return `<div class="cmp-card" data-date="${date}">
+    <div class="cmp-card-hdr">
+      <div class="cmp-hdr-grp">
+        <span class="cmp-hdr-lbl">Forecast</span>
+        <span class="cmp-hdr-date">${dow} ${mday}</span>
+        ${forecastedOn}
+      </div>
+      <div class="cmp-hdr-grp">
+        <span class="cmp-hdr-lbl">Actual Date</span>
+        <input type="date" class="cmp-date-inp" value="${date}">
+      </div>
+    </div>
+    <div class="cmp-col-hdrs">
+      <span></span>
+      <span class="cmp-ch">Forecast</span>
+      <span class="cmp-ch">Actual<br><span style="font-weight:400;text-transform:none;font-size:0.55rem;color:var(--dim)">10 AM</span></span>
+      <span class="cmp-ch">Diff</span>
+    </div>
+    <div class="cmp-row">
+      <span class="cmp-row-lbl">Score</span>
+      <div class="cmp-cell"><span class="badge-sm ${fColor}">${fcst ? fTotal + '/' + fMax : '—'}</span></div>
+      <div class="cmp-cell"><span class="badge-sm ${aColor}">${actl ? aTotal + '/' + aMax : '—'}</span>${actl ? `<span class="cmp-pts">${labelOf(aColor)}</span>` : ''}</div>
+      <div class="cmp-cell"><span class="cmp-diff ${dCls}">${dScoreS}${dScore != null ? ' pts' : ''}</span></div>
+    </div>
+    <div class="cmp-row">
+      <span class="cmp-row-lbl">Rain</span>
+      ${cell(fRainV, fRainPts)}
+      ${cell(aRainV, aRainPts)}
+      ${diffCell('—', fmtPts(dRainPts), diffCls(dRainPts))}
+    </div>
+    <div class="cmp-row">
+      <span class="cmp-row-lbl">Wind</span>
+      ${cell(fWindV, fWindPts)}
+      <div class="cmp-cell"><span class="cmp-val">${aWindVFull}</span><span class="cmp-pts">${aWindPts != null ? aWindPts + ' pts' : '—'}</span></div>
+      ${diffCell(fmt(dWind, 'mph'), fmtPts(dWindPts), diffCls(dWindPts))}
+    </div>
+    <div class="cmp-row">
+      <span class="cmp-row-lbl">Waves</span>
+      ${cell(fWaveV, fWavePts)}
+      <div class="cmp-cell"><span class="cmp-val">${aWaveV}</span><span class="cmp-pts">${aWavePts != null ? aWavePts + ' pts' : '—'}</span></div>
+      ${diffCell(fmt(dWave, 'ft'), fmtPts(dWavePts), diffCls(dWavePts))}
+    </div>
+  </div>`;
 }
 
 let actualsRowCache = {}; // date → { forecast, actual }
 
-async function refreshActualsRow(tr, newDate) {
-  tr.dataset.date = newDate;
+function applyBuoyToActual(actEntry, date) {
+  if (!actEntry) return;
+  const buoy = getBuoyForDate(cachedBuoyObs, date, 10);
+  if (!buoy) return;
+  if (buoy.wvht_ft  != null) { actEntry.wave    = buoy.wvht_ft;  actEntry.waveSource = 'buoy'; }
+  if (buoy.wspd_mph != null) { actEntry.wind    = buoy.wspd_mph; actEntry.windSource = 'buoy'; actEntry.windDir = buoy.wdir_deg; }
+}
+
+async function refreshComparisonCard(card, newDate) {
+  card.dataset.date = newDate;
   if (!actualsRowCache[newDate]) {
     const era5Cutoff = shiftDate(todayStr(), -2);
     const [fcsts, actls] = await Promise.all([
@@ -1562,27 +1604,23 @@ async function refreshActualsRow(tr, newDate) {
       newDate <= era5Cutoff ? apiActualsHourly(newDate, newDate) : Promise.resolve({})
     ]);
     const actEntry = actls[newDate] ?? null;
-    // Overlay buoy wave reading if available
-    if (actEntry) {
-      const buoy = getBuoyForDate(cachedBuoyObs, newDate, 10);
-      if (buoy?.wvht_ft != null) { actEntry.wave = buoy.wvht_ft; actEntry.waveSource = 'buoy'; }
-    }
-    actualsRowCache[newDate] = {
-      forecast: fcsts[newDate] ?? null,
-      actual:   actEntry
-    };
+    applyBuoyToActual(actEntry, newDate);
+    actualsRowCache[newDate] = { forecast: fcsts[newDate] ?? null, actual: actEntry };
   }
   const { forecast, actual } = actualsRowCache[newDate];
-  tr.innerHTML = buildActualsRowHTML(newDate, forecast, actual);
-  bindRowDateInput(tr);
+  const newCard = document.createElement('div');
+  newCard.innerHTML = buildComparisonCard(newDate, forecast, actual);
+  const inner = newCard.firstElementChild;
+  card.replaceWith(inner);
+  bindCardDateInput(inner);
 }
 
-function bindRowDateInput(tr) {
-  const inp = tr.querySelector('.act-date-inp');
+function bindCardDateInput(card) {
+  const inp = card.querySelector('.cmp-date-inp');
   if (!inp) return;
   inp.addEventListener('change', async e => {
     const v = e.target.value;
-    if (v) await refreshActualsRow(tr, v);
+    if (v) await refreshComparisonCard(card, v);
   });
 }
 
@@ -1606,13 +1644,9 @@ async function loadActuals() {
       apiNDBCBuoy()
     ]);
 
-    // Overlay buoy wave readings on model actuals where available
+    // Overlay buoy wave AND wind on model actuals where available (buoy is more accurate)
     dates.forEach(dt => {
-      const buoy = getBuoyForDate(buoyObs, dt, 10);
-      if (buoy?.wvht_ft != null && actls[dt]) {
-        actls[dt].wave       = buoy.wvht_ft;
-        actls[dt].waveSource = 'buoy';
-      }
+      if (actls[dt]) applyBuoyToActual(actls[dt], dt);
     });
 
     // Cache all loaded data
@@ -1623,23 +1657,22 @@ async function loadActuals() {
       };
     });
 
-    const tbody = document.getElementById('actuals-tbody');
-    tbody.innerHTML = '';
+    const list = document.getElementById('actuals-list');
+    list.innerHTML = '';
     [...dates].reverse().forEach(dt => { // most recent first
-      const tr = document.createElement('tr');
-      tr.dataset.date = dt;
-      tr.innerHTML = buildActualsRowHTML(dt, actualsRowCache[dt].forecast, actualsRowCache[dt].actual);
-      tbody.appendChild(tr);
-      bindRowDateInput(tr);
+      const wrap = document.createElement('div');
+      wrap.innerHTML = buildComparisonCard(dt, actualsRowCache[dt].forecast, actualsRowCache[dt].actual);
+      const card = wrap.firstElementChild;
+      list.appendChild(card);
+      bindCardDateInput(card);
     });
 
-    const hasFcst  = dates.some(dt => actualsRowCache[dt].forecast != null);
-    const hasBuoy  = dates.some(dt => actualsRowCache[dt].actual?.waveSource === 'buoy');
+    const hasFcst = dates.some(dt => actualsRowCache[dt].forecast != null);
+    const hasBuoy = dates.some(dt => actualsRowCache[dt].actual?.waveSource === 'buoy');
     document.getElementById('actuals-note').textContent =
-      (hasFcst ? 'F = prior forecast. ' : 'F columns populate as you use the app. ') +
-      'A = actual at 10 AM' +
-      (hasBuoy ? ' (wave = Buoy 41114). ' : '. ') +
-      'Tap any date to look up a different day.';
+      (hasFcst ? 'Forecast = most recent prior-day prediction. ' : 'Forecast columns populate as the app runs. ') +
+      'Actual = 10 AM readings' + (hasBuoy ? ' (wave & wind from Buoy 41114).' : '.') +
+      ' Tap any date to look up a different day.';
 
     document.getElementById('actuals-loading').style.display = 'none';
     document.getElementById('actuals-content').style.display = 'block';
