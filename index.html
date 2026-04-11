@@ -411,12 +411,12 @@ body {
 }
 .cmp-cell { text-align: center; line-height: 1.4; }
 .cmp-val  { font-size: 0.7rem;  color: var(--text);  font-weight: 600; display: block; }
-.cmp-pts  { font-size: 0.62rem; color: var(--dim);   display: block; }
+.cmp-pts  { font-size: 0.65rem; color: var(--muted); display: block; }
 .cmp-sep  { color: var(--dim);  font-size: 0.6rem; }
-.cmp-diff { font-size: 0.68rem; font-weight: 700; display: block; }
-.cmp-diff.pos  { color: #58a6ff; }
-.cmp-diff.neg  { color: #f9826c; }
-.cmp-diff.zero { color: var(--muted); }
+.cmp-diff { font-size: 0.85rem; font-weight: 800; display: block; }
+.cmp-diff.pos  { color: #4fc3f7; }
+.cmp-diff.neg  { color: #ff7043; }
+.cmp-diff.zero { color: var(--text); }
 .cmp-na   { color: var(--dim); font-size: 0.62rem; }
 .cmp-buoy { font-size: 0.56rem; color: var(--accent); font-weight: 600; margin-left: 2px; }
 
@@ -571,7 +571,7 @@ body {
 
 <div id="header">
   <h1>KEVFISH</h1>
-  <div class="subtitle">Fort Pierce Offshore &middot; 0&ndash;25 mi</div>
+  <div class="subtitle">Fort Pierce Offshore &middot; 0&ndash;12 mi</div>
 </div>
 
 <div id="alert-banner"></div>
@@ -673,7 +673,7 @@ body {
     </div>
     <div class="source-card">
       <h3>NOAA NDBC Buoy 41114</h3>
-      <p>Fort Pierce Nearshore buoy (27.551&deg;N, 80.225&deg;W). Provides real wave height and wind readings at the inlet. Used as current conditions display and as ground-truth wave actuals in the Actuals screen. Data via NOAA CoastWatch ERDDAP.</p>
+      <p>Fort Pierce Nearshore buoy (27.551&deg;N, 80.225&deg;W). Primary source for real-time wave height and wind. Used as current conditions display and as ground-truth wave actuals in the Actuals screen. Data via NOAA CoastWatch ERDDAP. Note: wind speed sensor on 41114 is occasionally offline; the nearest alternative is Station 41068 (3 nm NNE, 27.59&deg;N, 80.19&deg;W).</p>
     </div>
 
     <div class="section-hdr">Location</div>
@@ -681,7 +681,7 @@ body {
       <h3>Fort Pierce Inlet, FL</h3>
       <p>
         Lat 27.4467&deg; N &nbsp;&middot;&nbsp; Lon 80.3256&deg; W<br>
-        Offshore range: 0&ndash;25 miles<br>
+        Offshore range: 0&ndash;12 miles<br>
         NWS Marine Zone: AMZ630<br>
         Timezone: America/New_York
       </p>
@@ -742,9 +742,33 @@ body {
     </div>
 
     <div class="settings-section">
-      <div class="settings-section-hdr">Rain — Points per Tier</div>
+      <div class="settings-section-hdr">Rain — Forecast (Probability %)</div>
+      <div class="threshold-row" data-factor="rainPctLimits" data-idx="0" tabindex="0">
+        <span class="threshold-label"><span style="color:var(--green)">&#9679;</span>&thinsp;/&thinsp;<span style="color:var(--yellow)">&#9679;</span>&nbsp; cutoff</span>
+        <div class="threshold-ctrl">
+          <button class="arrow-btn" data-dir="-1">▼</button>
+          <span class="threshold-val" id="tv-rainPct-0"></span>
+          <button class="arrow-btn" data-dir="1">▲</button>
+        </div>
+      </div>
+      <div class="threshold-row" data-factor="rainPctLimits" data-idx="1" tabindex="0">
+        <span class="threshold-label"><span style="color:var(--yellow)">&#9679;</span>&thinsp;/&thinsp;<span style="color:var(--orange)">&#9679;</span>&nbsp; cutoff</span>
+        <div class="threshold-ctrl">
+          <button class="arrow-btn" data-dir="-1">▼</button>
+          <span class="threshold-val" id="tv-rainPct-1"></span>
+          <button class="arrow-btn" data-dir="1">▲</button>
+        </div>
+      </div>
+      <div class="threshold-row" data-factor="rainPctLimits" data-idx="2" tabindex="0">
+        <span class="threshold-label"><span style="color:var(--orange)">&#9679;</span>&thinsp;/&thinsp;<span style="color:var(--red)">&#9679;</span>&nbsp; cutoff</span>
+        <div class="threshold-ctrl">
+          <button class="arrow-btn" data-dir="-1">▼</button>
+          <span class="threshold-val" id="tv-rainPct-2"></span>
+          <button class="arrow-btn" data-dir="1">▲</button>
+        </div>
+      </div>
       <div class="threshold-row" data-factor="rain" data-idx="0" tabindex="0">
-        <span class="threshold-label"><span style="color:var(--green)">&#9679;</span> 0–10%</span>
+        <span class="threshold-label"><span style="color:var(--green)">&#9679;</span> <span id="rl-rain-0"></span></span>
         <div class="threshold-ctrl">
           <button class="arrow-btn" data-dir="-1">▼</button>
           <span class="threshold-val" id="tv-rain-0"></span>
@@ -752,7 +776,7 @@ body {
         </div>
       </div>
       <div class="threshold-row" data-factor="rain" data-idx="1" tabindex="0">
-        <span class="threshold-label"><span style="color:var(--yellow)">&#9679;</span> 10–25%</span>
+        <span class="threshold-label"><span style="color:var(--yellow)">&#9679;</span> <span id="rl-rain-1"></span></span>
         <div class="threshold-ctrl">
           <button class="arrow-btn" data-dir="-1">▼</button>
           <span class="threshold-val" id="tv-rain-1"></span>
@@ -760,7 +784,7 @@ body {
         </div>
       </div>
       <div class="threshold-row" data-factor="rain" data-idx="2" tabindex="0">
-        <span class="threshold-label"><span style="color:var(--orange)">&#9679;</span> 25–50%</span>
+        <span class="threshold-label"><span style="color:var(--orange)">&#9679;</span> <span id="rl-rain-2"></span></span>
         <div class="threshold-ctrl">
           <button class="arrow-btn" data-dir="-1">▼</button>
           <span class="threshold-val" id="tv-rain-2"></span>
@@ -768,12 +792,48 @@ body {
         </div>
       </div>
       <div class="threshold-row" data-factor="rain" data-idx="3" tabindex="0">
-        <span class="threshold-label"><span style="color:var(--red)">&#9679;</span> 50–100%</span>
+        <span class="threshold-label"><span style="color:var(--red)">&#9679;</span> <span id="rl-rain-3"></span></span>
         <div class="threshold-ctrl">
           <button class="arrow-btn" data-dir="-1">▼</button>
           <span class="threshold-val" id="tv-rain-3"></span>
           <button class="arrow-btn" data-dir="1">▲</button>
         </div>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <div class="settings-section-hdr">Rain — Actuals (Inches Fallen)</div>
+      <div class="threshold-row" data-factor="rainInLimits" data-idx="0" tabindex="0">
+        <span class="threshold-label"><span style="color:var(--green)">&#9679;</span>&thinsp;/&thinsp;<span style="color:var(--yellow)">&#9679;</span>&nbsp; cutoff</span>
+        <div class="threshold-ctrl">
+          <button class="arrow-btn" data-dir="-1">▼</button>
+          <span class="threshold-val" id="tv-rainIn-0"></span>
+          <button class="arrow-btn" data-dir="1">▲</button>
+        </div>
+      </div>
+      <div class="threshold-row" data-factor="rainInLimits" data-idx="1" tabindex="0">
+        <span class="threshold-label"><span style="color:var(--yellow)">&#9679;</span>&thinsp;/&thinsp;<span style="color:var(--orange)">&#9679;</span>&nbsp; cutoff</span>
+        <div class="threshold-ctrl">
+          <button class="arrow-btn" data-dir="-1">▼</button>
+          <span class="threshold-val" id="tv-rainIn-1"></span>
+          <button class="arrow-btn" data-dir="1">▲</button>
+        </div>
+      </div>
+      <div class="threshold-row">
+        <span class="threshold-label"><span style="color:var(--green)">&#9679;</span> 0.00&Prime; (no rain)</span>
+        <span class="threshold-val" style="color:var(--dim)" id="tv-rainIn-ref-0"></span>
+      </div>
+      <div class="threshold-row">
+        <span class="threshold-label"><span style="color:var(--yellow)">&#9679;</span> <span id="rl-rainIn-1"></span></span>
+        <span class="threshold-val" style="color:var(--dim)" id="tv-rainIn-ref-1"></span>
+      </div>
+      <div class="threshold-row">
+        <span class="threshold-label"><span style="color:var(--orange)">&#9679;</span> <span id="rl-rainIn-2"></span></span>
+        <span class="threshold-val" style="color:var(--dim)" id="tv-rainIn-ref-2"></span>
+      </div>
+      <div class="threshold-row">
+        <span class="threshold-label"><span style="color:var(--red)">&#9679;</span> <span id="rl-rainIn-3"></span></span>
+        <span class="threshold-val" style="color:var(--dim)" id="tv-rainIn-ref-3"></span>
       </div>
     </div>
 
@@ -922,12 +982,16 @@ const DEFAULT_POINTS = {
   rain:  [5, 4, 3, 1],
   wind:  [5, 4, 3, 1],
   wave:  [6, 5, 3, 1],
-  tiers: [14, 10, 7]   // lower limits for VGE, GVG, FG; Poor-Fair = 0 to tiers[2]-1
+  tiers: [14, 10, 7],          // lower limits for VGE, GVG, FG; Poor-Fair = 0 to tiers[2]-1
+  rainPctLimits: [10, 25, 50], // forecast probability % breakpoints (3 splits → 4 tiers)
+  rainInLimits:  [5, 10]       // actuals inches × 100: 5 = 0.05", 10 = 0.10" (2 splits → 4 tiers)
 };
 
 function parseStoredPoints(raw) {
   const loaded = JSON.parse(raw);
-  if (!loaded.tiers) loaded.tiers = [...DEFAULT_POINTS.tiers];
+  if (!loaded.tiers)         loaded.tiers         = [...DEFAULT_POINTS.tiers];
+  if (!loaded.rainPctLimits) loaded.rainPctLimits  = [...DEFAULT_POINTS.rainPctLimits];
+  if (!loaded.rainInLimits)  loaded.rainInLimits   = [...DEFAULT_POINTS.rainInLimits];
   return loaded;
 }
 
@@ -937,6 +1001,7 @@ async function savePointsToFirestore(p) {
   try {
     await db.collection('settings').doc('points').set({
       rain: p.rain, wind: p.wind, wave: p.wave, tiers: p.tiers,
+      rainPctLimits: p.rainPctLimits, rainInLimits: p.rainInLimits,
       updatedAt: firebase.firestore.FieldValue.serverTimestamp()
     });
   } catch (e) { console.warn('Settings save failed:', e.message); }
@@ -950,10 +1015,12 @@ async function initPoints() {
       if (snap.exists) {
         const d = snap.data();
         const loaded = {
-          rain:  d.rain  || [...DEFAULT_POINTS.rain],
-          wind:  d.wind  || [...DEFAULT_POINTS.wind],
-          wave:  d.wave  || [...DEFAULT_POINTS.wave],
-          tiers: d.tiers || [...DEFAULT_POINTS.tiers]
+          rain:          d.rain          || [...DEFAULT_POINTS.rain],
+          wind:          d.wind          || [...DEFAULT_POINTS.wind],
+          wave:          d.wave          || [...DEFAULT_POINTS.wave],
+          tiers:         d.tiers         || [...DEFAULT_POINTS.tiers],
+          rainPctLimits: d.rainPctLimits || [...DEFAULT_POINTS.rainPctLimits],
+          rainInLimits:  d.rainInLimits  || [...DEFAULT_POINTS.rainInLimits]
         };
         validateTiers(loaded);
         points        = loaded;
@@ -1003,9 +1070,10 @@ let pendingPoints = JSON.parse(JSON.stringify(DEFAULT_POINTS));
 // SCORING
 // ============================================================
 function scoreRain(p) {
-  if (p < 10)  return points.rain[0];
-  if (p < 25)  return points.rain[1];
-  if (p < 50)  return points.rain[2];
+  const [t1, t2, t3] = points.rainPctLimits;
+  if (p < t1)  return points.rain[0];
+  if (p < t2)  return points.rain[1];
+  if (p < t3)  return points.rain[2];
   return points.rain[3];
 }
 function scoreWind(v) {
@@ -1246,8 +1314,8 @@ async function saveForecast(dates, rainArr, windArr, windDirArr, waveMap, windyW
 let actualsAllDocs = [];
 let cachedBuoyObs  = null; // shared between forecast and actuals screens
 
-async function apiNDBCBuoy() {
-  if (cachedBuoyObs) return cachedBuoyObs;
+async function apiNDBCBuoy(forceRefresh = false) {
+  if (cachedBuoyObs && !forceRefresh) return cachedBuoyObs;
   try {
     const start = shiftDate(todayStr(), -9); // 9 days back covers actuals + current
     const url =
@@ -1260,18 +1328,19 @@ async function apiNDBCBuoy() {
     const rows = data?.table?.rows;
     if (!rows?.length) return null;
     const obs = rows
-      .filter(r => r[4] != null) // must have wave height
+      // keep row if it has valid wind OR valid wave — never drop a row solely because wvht is bad
+      .filter(r => (r[3] != null && r[3] >= 0) || (r[4] != null && r[4] > 0))
       .map(r => {
         const [, timeISO, wdir, wspd, wvht] = r;
         const dt = new Date(timeISO);
         return {
           date:     dt.toLocaleDateString('en-CA', { timeZone: TZ }),
-          localHr:  parseInt(dt.toLocaleTimeString('en-US', { timeZone: TZ, hour: 'numeric', hour12: false })),
+          localHr:  parseInt(dt.toLocaleTimeString('en-US', { timeZone: TZ, hour: '2-digit', minute: '2-digit', hour12: false }).slice(0, 2)),
           localMin: dt.getUTCMinutes(),
           timeISO,
-          wvht_ft:  +(wvht  * 3.28084).toFixed(2),
-          wspd_mph: wspd != null ? +(wspd * 2.23694).toFixed(1) : null,
-          wdir_deg: wdir != null ? Math.round(wdir)              : null
+          wvht_ft:  (wvht != null && wvht > 0) ? +(wvht * 3.28084).toFixed(2) : null,  // null if sentinel
+          wspd_mph: (wspd != null && wspd >= 0) ? +(wspd * 2.23694).toFixed(1) : null,
+          wdir_deg: wdir != null ? Math.round(wdir) : null
         };
       });
     cachedBuoyObs = obs;
@@ -1340,7 +1409,7 @@ async function apiActualsHourly(startDate, endDate) {
         precipIn: precipArr[h]  != null ? +(precipArr[h]  * 0.0394).toFixed(2) : null,
         wind:     windSpArr[h]  != null ? Math.round(windSpArr[h])              : null,
         windDir:  windDirArr[h] != null ? Math.round(windDirArr[h])             : null,
-        wave:     waveArr[h]    != null ? +(waveArr[h]    * 3.28084).toFixed(2) : null
+        wave:     (waveArr[h] != null && waveArr[h] > 0) ? +(waveArr[h] * 3.28084).toFixed(2) : null
       };
       d = shiftDate(d, 1);
       dayIdx++;
@@ -1514,14 +1583,26 @@ async function loadForecast() {
 // ============================================================
 function scoreActualRain(precipIn) {
   if (precipIn == null) return null;
-  if (precipIn === 0)   return points.rain[0]; // no rain
-  if (precipIn < 0.10)  return points.rain[1]; // light
-  if (precipIn < 0.50)  return points.rain[2]; // moderate
-  return points.rain[3];                        // heavy
+  const t1 = points.rainInLimits[0] / 100;  // e.g. 5 → 0.05"
+  const t2 = points.rainInLimits[1] / 100;  // e.g. 10 → 0.10"
+  if (precipIn === 0)   return points.rain[0]; // 0.00" (no rain)
+  if (precipIn <= t1)   return points.rain[1];
+  if (precipIn <= t2)   return points.rain[2];
+  return points.rain[3];
 }
 
-function buildComparisonCard(date, fcst, actl) {
-  const { dow, mday } = fmtDate(date);
+async function loadForecastForDate(actualDate, forecastDocDate) {
+  // Ensure docs are cached
+  if (!actualsAllDocs.length && firestoreReady) {
+    await loadForecastsForDates([actualDate]);
+  }
+  const doc = actualsAllDocs.find(d => d.id === forecastDocDate);
+  if (doc?.data[actualDate]) return { ...doc.data[actualDate], forecastedOn: forecastDocDate };
+  return null;
+}
+
+function buildComparisonCard(actualDate, forecastDate, fcst, actl) {
+  const { dow: aDow, mday: aMday } = fmtDate(actualDate);
 
   // Forecast scores
   const fRainPts = fcst?.rain != null ? scoreRain(fcst.rain) : null;
@@ -1586,19 +1667,16 @@ function buildComparisonCard(date, fcst, actl) {
       <span class="cmp-pts">${ptsStr}</span>
     </div>`;
 
-  const forecastedOn = fcst?.forecastedOn
-    ? `<div class="cmp-hdr-lbl" style="margin-top:2px">fcst made ${fcst.forecastedOn.slice(5)}</div>` : '';
-
-  return `<div class="cmp-card" data-date="${date}">
+  return `<div class="cmp-card" data-actual-date="${actualDate}" data-forecast-date="${forecastDate || ''}">
     <div class="cmp-card-hdr">
       <div class="cmp-hdr-grp">
-        <span class="cmp-hdr-lbl">Forecast</span>
-        <span class="cmp-hdr-date">${dow} ${mday}</span>
-        ${forecastedOn}
+        <span class="cmp-hdr-lbl">Forecast Date</span>
+        <input type="date" class="cmp-date-inp" value="${forecastDate || ''}">
+        <span class="cmp-hdr-lbl" style="margin-top:2px;font-size:0.56rem">change to compare earlier forecast</span>
       </div>
       <div class="cmp-hdr-grp">
         <span class="cmp-hdr-lbl">Actual Date</span>
-        <input type="date" class="cmp-date-inp" value="${date}">
+        <span class="cmp-hdr-date">${aDow} ${aMday}</span>
       </div>
     </div>
     <div class="cmp-col-hdrs">
@@ -1644,21 +1722,12 @@ function applyBuoyToActual(actEntry, date) {
   if (buoy.wspd_mph != null) { actEntry.wind    = buoy.wspd_mph; actEntry.windSource = 'buoy'; actEntry.windDir = buoy.wdir_deg; }
 }
 
-async function refreshComparisonCard(card, newDate) {
-  card.dataset.date = newDate;
-  if (!actualsRowCache[newDate]) {
-    const era5Cutoff = shiftDate(todayStr(), -2);
-    const [fcsts, actls] = await Promise.all([
-      loadForecastsForDates([newDate]),
-      newDate <= era5Cutoff ? apiActualsHourly(newDate, newDate) : Promise.resolve({})
-    ]);
-    const actEntry = actls[newDate] ?? null;
-    applyBuoyToActual(actEntry, newDate);
-    actualsRowCache[newDate] = { forecast: fcsts[newDate] ?? null, actual: actEntry };
-  }
-  const { forecast, actual } = actualsRowCache[newDate];
-  const newCard = document.createElement('div');
-  newCard.innerHTML = buildComparisonCard(newDate, forecast, actual);
+async function refreshComparisonCard(card, actualDate, newForecastDate) {
+  // Actual data is fixed — only reload the forecast from the chosen forecast date
+  const actual   = actualsRowCache[actualDate]?.actual ?? null;
+  const forecast = await loadForecastForDate(actualDate, newForecastDate);
+  const newCard  = document.createElement('div');
+  newCard.innerHTML = buildComparisonCard(actualDate, newForecastDate, forecast, actual);
   const inner = newCard.firstElementChild;
   card.replaceWith(inner);
   bindCardDateInput(inner);
@@ -1668,9 +1737,50 @@ function bindCardDateInput(card) {
   const inp = card.querySelector('.cmp-date-inp');
   if (!inp) return;
   inp.addEventListener('change', async e => {
-    const v = e.target.value;
-    if (v) await refreshComparisonCard(card, v);
+    const v          = e.target.value;
+    const actualDate = card.dataset.actualDate;
+    if (v && actualDate) await refreshComparisonCard(card, actualDate, v);
   });
+}
+
+// Fetch yesterday + today actuals from Open-Meteo forecast API (ERA5-seamless, ~1 day lag)
+// Used to fill wind/rain for dates too recent for the archive API (which has a 2-day lag)
+async function apiRecentActualsFromForecast() {
+  try {
+    const [weather, waves] = await Promise.all([
+      getJSON(
+        `https://api.open-meteo.com/v1/forecast` +
+        `?latitude=${LAT}&longitude=${LON}` +
+        `&hourly=precipitation,wind_speed_10m,wind_direction_10m` +
+        `&wind_speed_unit=mph&timezone=${encodeURIComponent(TZ)}` +
+        `&past_days=2&forecast_days=1`
+      ),
+      getJSON(
+        `https://marine-api.open-meteo.com/v1/marine` +
+        `?latitude=${MARINE_LAT}&longitude=${MARINE_LON}` +
+        `&hourly=wave_height` +
+        `&timezone=${encodeURIComponent(TZ)}` +
+        `&past_days=2&forecast_days=1`
+      ).catch(() => null)
+    ]);
+    const times      = weather?.hourly?.time                  || [];
+    const precipArr  = weather?.hourly?.precipitation         || [];
+    const windSpArr  = weather?.hourly?.wind_speed_10m        || [];
+    const windDirArr = weather?.hourly?.wind_direction_10m    || [];
+    const waveArr    = waves?.hourly?.wave_height             || [];
+    const result = {};
+    times.forEach((t, i) => {
+      if (!t.endsWith('T10:00')) return; // 10 AM local slot only
+      const datePart = t.slice(0, 10);
+      result[datePart] = {
+        precipIn: precipArr[i]  != null ? +(precipArr[i]  * 0.0394).toFixed(2) : null,
+        wind:     windSpArr[i]  != null ? Math.round(windSpArr[i])              : null,
+        windDir:  windDirArr[i] != null ? Math.round(windDirArr[i])             : null,
+        wave:     (waveArr[i] != null && waveArr[i] > 0) ? +(waveArr[i] * 3.28084).toFixed(2) : null
+      };
+    });
+    return result;
+  } catch { return {}; }
 }
 
 let actualsLoaded = false;
@@ -1680,48 +1790,79 @@ async function loadActuals() {
   actualsLoaded = true;
 
   try {
-    const era5End   = shiftDate(todayStr(), -2); // ERA5 has ~2 day lag
-    const era5Start = shiftDate(era5End, -6);    // 7 days total
+    const today     = todayStr();
+    const era5End   = shiftDate(today, -2);   // ERA5 has ~2 day lag
+    const era5Start = shiftDate(era5End, -6); // 7 days of ERA5 data
 
-    // Build date list oldest→newest
-    const dates = [];
-    for (let d = era5Start; d <= era5End; d = shiftDate(d, 1)) dates.push(d);
+    // Full date list: 7 ERA5 days + yesterday + today (most recent first when reversed)
+    const era5Dates    = [];
+    for (let d = era5Start; d <= era5End; d = shiftDate(d, 1)) era5Dates.push(d);
+    const recentDates  = [shiftDate(today, -1), today]; // yesterday + today
+    const allDates     = [...era5Dates, ...recentDates];
 
-    const [fcsts, actls, buoyObs] = await Promise.all([
-      loadForecastsForDates(dates),
-      apiActualsHourly(era5Start, era5End),
-      apiNDBCBuoy()
+    const [actls, , recentData] = await Promise.all([
+      apiActualsHourly(era5Start, era5End),     // ERA5 archive (2-day lag): era5Start..era5End
+      apiNDBCBuoy(true),                         // refresh buoy cache (runs as side-effect)
+      apiRecentActualsFromForecast()             // forecast API fills yesterday+today wind/rain
     ]);
 
-    // Overlay buoy wave AND wind on model actuals where available (buoy is more accurate)
-    dates.forEach(dt => {
+    // Seed recent dates; fill from forecast API where archive has nothing
+    recentDates.forEach(dt => {
+      if (!actls[dt]) actls[dt] = { precipIn: null, wind: null, windDir: null, wave: null };
+      const r = recentData?.[dt];
+      if (r) {
+        if (actls[dt].precipIn == null) actls[dt].precipIn = r.precipIn;
+        if (actls[dt].wind     == null) actls[dt].wind     = r.wind;
+        if (actls[dt].windDir  == null) actls[dt].windDir  = r.windDir;
+        if (actls[dt].wave     == null) actls[dt].wave     = r.wave;
+      }
+    });
+
+    // Populate actualsAllDocs so forecast lookups work
+    await loadForecastsForDates(allDates);
+
+    // For each actual date, default forecast = the doc from the day before
+    const forecastsByDate = {};
+    allDates.forEach(dt => {
+      const prevDay = shiftDate(dt, -1);
+      const exact   = actualsAllDocs.find(d => d.id === prevDay && d.data[dt]);
+      if (exact) { forecastsByDate[dt] = { ...exact.data[dt], forecastedOn: prevDay }; return; }
+      const prior = actualsAllDocs.find(d => d.id < dt && d.data[dt]);
+      forecastsByDate[dt] = prior ? { ...prior.data[dt], forecastedOn: prior.id } : null;
+    });
+
+    // Overlay buoy wave AND wind on all dates (buoy is more accurate than model)
+    allDates.forEach(dt => {
       if (actls[dt]) applyBuoyToActual(actls[dt], dt);
     });
 
     // Cache all loaded data
-    dates.forEach(dt => {
+    allDates.forEach(dt => {
       actualsRowCache[dt] = {
-        forecast: fcsts[dt] ?? null,
+        forecast: forecastsByDate[dt] ?? null,
         actual:   actls[dt] ?? null
       };
     });
 
     const list = document.getElementById('actuals-list');
     list.innerHTML = '';
-    [...dates].reverse().forEach(dt => { // most recent first
-      const wrap = document.createElement('div');
-      wrap.innerHTML = buildComparisonCard(dt, actualsRowCache[dt].forecast, actualsRowCache[dt].actual);
+    [...allDates].reverse().forEach(dt => { // most recent first
+      const wrap         = document.createElement('div');
+      const forecastDate = shiftDate(dt, -1); // default = day before actual
+      wrap.innerHTML = buildComparisonCard(dt, forecastDate, actualsRowCache[dt].forecast, actualsRowCache[dt].actual);
       const card = wrap.firstElementChild;
       list.appendChild(card);
       bindCardDateInput(card);
     });
 
-    const hasFcst = dates.some(dt => actualsRowCache[dt].forecast != null);
-    const hasBuoy = dates.some(dt => actualsRowCache[dt].actual?.waveSource === 'buoy');
+    const hasFcst = allDates.some(dt => actualsRowCache[dt].forecast != null);
+    const hasBuoy = allDates.some(dt => actualsRowCache[dt].actual?.waveSource === 'buoy');
     document.getElementById('actuals-note').textContent =
-      (hasFcst ? 'Forecast = most recent prior-day prediction. ' : 'Forecast columns populate as the app runs. ') +
-      'Actual = 10 AM readings' + (hasBuoy ? ' (wave & wind from Buoy 41114).' : '.') +
-      ' Tap any date to look up a different day.';
+      (hasFcst ? 'Forecast = prior-day prediction. ' : 'Forecast columns populate as the app runs. ') +
+      'Actual = 10 AM readings. Wave from Buoy 41114' +
+      (hasBuoy ? '' : ' (when available)') +
+      '; wind & rain from ERA5 archive or forecast analysis. Recent dates use forecast model — values finalize in ~2 days.' +
+      ' Change Forecast Date on any card to compare an earlier prediction.';
 
     document.getElementById('actuals-loading').style.display = 'none';
     document.getElementById('actuals-content').style.display = 'block';
@@ -1761,7 +1902,43 @@ function renderSettings() {
   const autoEl = document.getElementById('tv-tiers-auto');
   if (autoEl) autoEl.textContent = `0 – ${pendingPoints.tiers[2] - 1} pts`;
 
-  // Point values
+  // Forecast rain % thresholds
+  const [rp1, rp2, rp3] = pendingPoints.rainPctLimits;
+  pendingPoints.rainPctLimits.forEach((val, idx) => {
+    const el = document.getElementById(`tv-rainPct-${idx}`);
+    if (!el) return;
+    el.textContent = val + '%';
+    el.classList.toggle('changed', val !== points.rainPctLimits[idx]);
+  });
+  // Dynamic forecast tier labels
+  [`0–${rp1 - 1}%`, `${rp1}–${rp2 - 1}%`, `${rp2}–${rp3 - 1}%`, `${rp3}–100%`].forEach((lbl, idx) => {
+    const el = document.getElementById(`rl-rain-${idx}`);
+    if (el) el.textContent = lbl;
+  });
+
+  // Actuals rain inch thresholds
+  const [ri1, ri2] = pendingPoints.rainInLimits;
+  pendingPoints.rainInLimits.forEach((val, idx) => {
+    const el = document.getElementById(`tv-rainIn-${idx}`);
+    if (!el) return;
+    el.textContent = (val / 100).toFixed(2) + '\u2033';
+    el.classList.toggle('changed', val !== points.rainInLimits[idx]);
+  });
+  // Dynamic actuals tier labels + reference point values
+  const t1in = (ri1 / 100).toFixed(2), t2in = (ri2 / 100).toFixed(2);
+  const riLabels = [`0.01\u2033 \u2013 ${t1in}\u2033`, `${(ri1/100 + 0.01).toFixed(2)}\u2033 \u2013 ${t2in}\u2033`, `> ${t2in}\u2033`];
+  // green ref (idx=0): no label span, just point ref
+  const ref0 = document.getElementById('tv-rainIn-ref-0');
+  if (ref0) { ref0.textContent = pendingPoints.rain[0] + ' pts'; ref0.classList.toggle('changed', pendingPoints.rain[0] !== points.rain[0]); }
+  // yellow/orange/red refs (idx=1,2,3)
+  [1, 2, 3].forEach(i => {
+    const lbl = document.getElementById(`rl-rainIn-${i}`);
+    if (lbl) lbl.textContent = riLabels[i - 1];
+    const ref = document.getElementById(`tv-rainIn-ref-${i}`);
+    if (ref) { ref.textContent = pendingPoints.rain[i] + ' pts'; ref.classList.toggle('changed', pendingPoints.rain[i] !== points.rain[i]); }
+  });
+
+  // Point values (rain tier labels are now dynamic; wind/wave labels are static)
   ['rain','wind','wave'].forEach(factor => {
     pendingPoints[factor].forEach((val, idx) => {
       const el = document.getElementById(`tv-${factor}-${idx}`);
@@ -1798,6 +1975,16 @@ function adjustPoint(factor, idx, dir) {
     const hi   = idx === 0 ? pMax : arr[idx - 1] - 1;
     const lo   = idx === arr.length - 1 ? 1 : arr[idx + 1] + 1;
     arr[idx]   = Math.min(Math.max(arr[idx] + dir, lo), hi);
+  } else if (factor === 'rainPctLimits') {
+    const arr = pendingPoints.rainPctLimits;
+    const lo  = idx === 0 ? 1 : arr[idx - 1] + 1;
+    const hi  = idx === arr.length - 1 ? 99 : arr[idx + 1] - 1;
+    arr[idx]  = Math.min(Math.max(arr[idx] + dir, lo), hi);
+  } else if (factor === 'rainInLimits') {
+    const arr = pendingPoints.rainInLimits;
+    const lo  = idx === 0 ? 1 : arr[idx - 1] + 1;
+    const hi  = idx === arr.length - 1 ? 50 : arr[idx + 1] - 1; // max 0.50"
+    arr[idx]  = Math.min(Math.max(arr[idx] + dir, lo), hi);
   } else {
     pendingPoints[factor][idx] = Math.min(Math.max(pendingPoints[factor][idx] + dir, 0), 10);
     validateTiers(pendingPoints); // re-clamp tiers if max changed
@@ -1808,10 +1995,27 @@ function adjustPoint(factor, idx, dir) {
 function buildChangesSummary() {
   const lines = [];
   const fLabels = { rain: 'Rain', wind: 'Wind', wave: 'Wave' };
+  // Forecast % threshold changes
+  const pctNames = ['Green/Yellow cutoff', 'Yellow/Orange cutoff', 'Orange/Red cutoff'];
+  pendingPoints.rainPctLimits.forEach((val, idx) => {
+    if (val !== points.rainPctLimits[idx])
+      lines.push(`<span class="change-line">Forecast Rain ${pctNames[idx]}: ${points.rainPctLimits[idx]}% → ${val}%</span>`);
+  });
+  // Actuals inch threshold changes
+  const inNames = ['Green/Yellow cutoff', 'Yellow/Orange cutoff'];
+  pendingPoints.rainInLimits.forEach((val, idx) => {
+    if (val !== points.rainInLimits[idx])
+      lines.push(`<span class="change-line">Actuals Rain ${inNames[idx]}: ${(points.rainInLimits[idx]/100).toFixed(2)}\u2033 → ${(val/100).toFixed(2)}\u2033</span>`);
+  });
+  // Point value changes (rain labels are dynamic; use current live labels)
   ['rain','wind','wave'].forEach(factor => {
     pendingPoints[factor].forEach((val, idx) => {
-      if (val !== points[factor][idx])
-        lines.push(`<span class="change-line">${fLabels[factor]} ${PT_LABELS[factor][idx]}: ${points[factor][idx]} → ${val} pts</span>`);
+      if (val !== points[factor][idx]) {
+        const lbl = factor === 'rain'
+          ? document.getElementById(`rl-rain-${idx}`)?.textContent || PT_LABELS[factor][idx]
+          : PT_LABELS[factor][idx];
+        lines.push(`<span class="change-line">${fLabels[factor]} ${lbl}: ${points[factor][idx]} → ${val} pts</span>`);
+      }
     });
   });
   pendingPoints.tiers.forEach((val, idx) => {
@@ -1907,12 +2111,38 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
 });
 
 // ============================================================
+// AUTO-REFRESH ACTUALS AT 10:01 AM DAILY
+// ============================================================
+function scheduleActualsRefresh() {
+  const now      = new Date();
+  const localStr = now.toLocaleTimeString('en-US', { timeZone: TZ, hour12: false,
+                     hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  const [h, m, s] = localStr.split(':').map(Number);
+  const secondsNow    = h * 3600 + m * 60 + s;
+  const secondsTarget = 10 * 3600 + 1 * 60; // 10:01:00 AM
+  let msUntil = (secondsTarget - secondsNow) * 1000;
+  if (msUntil <= 0) msUntil += 24 * 60 * 60 * 1000; // schedule for tomorrow
+
+  setTimeout(() => {
+    actualsLoaded = false;
+    actualsRowCache = {};
+    if (document.getElementById('screen-actuals').classList.contains('active')) {
+      document.getElementById('actuals-content').style.display = 'none';
+      document.getElementById('actuals-loading').style.display = 'flex';
+      loadActuals();
+    }
+    scheduleActualsRefresh(); // reschedule for next day
+  }, msUntil);
+}
+
+// ============================================================
 // INIT
 // ============================================================
 (async () => {
   await initPoints();          // load shared settings from Firestore first
   updateSourcesTable();        // populate Sources score table
   loadForecast();
+  scheduleActualsRefresh();    // auto-refresh actuals at 10:01 AM daily
 })();
 </script>
 </body>
